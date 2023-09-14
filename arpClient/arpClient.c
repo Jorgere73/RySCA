@@ -2,6 +2,7 @@
 #include "eth.h"
 #include "ipv4.h"
 #include <stdlib.h>
+//sigue dando error
 
 int main(int argc, char* argv[])
 {
