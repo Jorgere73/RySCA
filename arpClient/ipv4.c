@@ -1,7 +1,65 @@
-#include "ipv4.h"
 
+#include "arp.h"
+#include "eth.h"
+#include "ipv4.h"
+#include <unistd.h>
+#include <libgen.h>
+#include <string.h>
+#include <rawnet.h>
+#include <timerms.h>
+#include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "ipv4_route_table.h"
+#include "ipv4_config.h"
+
+
+
+typedef struct ipv4_layer {
+eth_iface_t * iface;  /*iface=eth_open("eth1"); */
+ipv4_addr_t addr; /* 192.168.1.1 */
+ipv4_addr_t netmask; /* 255.255.255.0 */
+ipv4_route_table_t * routing_table;
+} ipv4_layer_t ; 
+
+ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
+  
+    ipv4_layer_t * layer = malloc(sizeof(ipv4_layer_t));
+    
+    char ifname[4];
+    ipv4_addr_t addr;
+    ipv4_addr_t netmask;
+    ipv4_config_read( "ipv4_config_client.txt", ifname , addr,netmask);/* 2. Leer direcciones y subred de file_conf */
+
+    memcpy(layer->iface, ifname, 4);
+    memcpy(layer->addr, addr, IPv4_ADDR_SIZE);
+    memcpy(layer->netmask, netmask, IPv4_ADDR_SIZE);
+
+
+    ipv4_route_table_t * routing_table;
+    routing_table= ipv4_route_table_create(); //HAY QUE LIBERAR!!!!!!!! ipv4_route_table_free()
+
+    int numRutasLeidas = ipv4_route_table_read("ipv4_route_table_client.txt", routing_table);/* 3. Leer tabla de reenvío IP de file_conf_route */
+    if(numRutasLeidas ==0){
+      printf("No se ha leido ninguna ruta\n");
+    }else if(numRutasLeidas ==-1){
+      printf("Se ha producido algún error al leer el fichero de rutas.\n");
+    }
+    memcpy(layer->routing_table, routing_table, sizeof(routing_table));/* 1. Crear layer -> routing_table */
+    
+    eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
+
+}
+
+int ipv4_close (ipv4_layer_t * layer) {
+
+/* 1. Liberar table de rutas (layer -> routing_table) */
+  ipv4_route_table_free(layer->routing_table);
+/* 2. Cerrar capa Ethernet con eth_close() */
+  eth_close ( layer->iface );
+
+free(layer);
+}
 
 /* Dirección IPv4 a cero: "0.0.0.0" */
 ipv4_addr_t IPv4_ZERO_ADDR = { 0, 0, 0, 0 };

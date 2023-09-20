@@ -1,4 +1,4 @@
 #!/bin/bash
 
-rawnetcc clienteArp arp.c ipv4.c eth.c 
+rawnetcc arpClient arp.c ipv4.c eth.c arpClient.c
 ./arpClient

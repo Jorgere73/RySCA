@@ -1,7 +1,7 @@
 #include "eth.h"
 #include <rawnet.h>
 #include <timerms.h>
-#include "eth.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

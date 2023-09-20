@@ -1,15 +1,26 @@
 #include "arp.h"
 #include "eth.h"
 #include "ipv4.h"
-#include <stdlib.h>
-//sigue dando error
 
-int main(int argc, char* argv[])
-{
-    eth_iface_t * interfaz = eth_open(argv[0]);
-    mac_addr_t macpropio;
-    ipv4_addr_t ipdestino;
-    int a = ipv4_str_addr(argv[1], ipdestino);
-    int result = arp_resolve(interfaz, argv[1], macpropio);
-    return 0;
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <libgen.h>
+
+int main(int argc, char* argv[]){
+
+	if(argc!=3){
+		printf("ERROR\n");
+		printf("					USO\n");
+		printf("	arp_client <nombre_interfaz> <IP_destino>");
+	}
+    eth_iface_t * iface= eth_open(argv[1]);
+    ipv4_addr_t ip_addr;
+    ipv4_str_addr(argv[2],ip_addr);
+    mac_addr_t mac;//aqui es donde vamos a almacenar la MAC DEST(que buscamos)
+    arp_resolve(iface, ip_addr, mac);
+    
+    
+    
 }
