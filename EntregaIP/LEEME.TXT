@@ -1,0 +1,24 @@
+Esta es una implementación básica de la capa de enlace Ethernet, así como un
+Cliente y un Servidor Ethernet para demostar el funcionamiento de la librería
+librawnet.
+
+Aunque esta implementación es funcional para el Cliente y Servidor Ethernet
+incluidos, y puede usarse de base para implementar capas superiores de la
+torre de protocolos, no es una implementación Ethernet completa y requerirá
+cambios por parte del alumno de cara al proyecto final.
+
+
+Instrucciones de compilación:
+
+1. Instalar los siguientes paquetes: gcc, glibc-devel, libcap-utils
+
+2. Instalar la librería librawnet-devel
+
+3. Ejecutar el siguiente comando para compilar el Cliente Ethernet:
+
+   > rawnetcc /tmp/eth_client eth.c eth_client.c
+
+4. Ejecutar el siguiente comando para compilar el Servidor Ethernet:
+
+   > rawnetcc /tmp/eth_server eth.c eth_server.c
+

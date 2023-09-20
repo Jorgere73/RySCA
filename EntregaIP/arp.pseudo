@@ -1,0 +1,62 @@
+#include arp.h
+/*
+iface->por donde va a salir la información interfaz ethernet
+dest->direccion ipv4 destino
+mac->direccion mac del destino
+*/
+#define EXITO 1
+#define FRACASO -1
+
+ipv4_addr_t src=ObetenerIP(); //obtenemos la ip de origen para poder utilizarla en el mensaje ARP
+const mac_addr_t mac_org=obtenerMACorigen(); //Esta mac  sera fija en cada dispositivo 
+
+int arp_resolve ( eth_iface_t * iface,ipv4_addr_t dest,mac_addr_t mac ){
+
+    //Comprobamos si tenemos esa MAC en nustra tabla ARP
+    si exsisteMac(dest) entonces
+        mac=obtenerMACconIP(dest)
+        return EXITO
+    //PRIMERO TENEMOS QUE MANDAR EL MENSAJE DE ARP REQUEST
+
+    mensajeARPrequest=creoMensajeARP(mac_org, src, dest) //con esta funcion crearemos la "capsula" 
+                                                         //MAC destino --> 00:00:00:00:00:00
+    envioMensajeARP(mensajeARP) 
+
+    //SEGUNDO TENEMOS QUE RECIBIR EL MENSAJE DE ARP REPLY
+    long int timeout = 2000;
+    mac_addr_t mac = recibirArpReply(iface,dest,timeout)//también guarda la macDest en cache. Dentro nos llegara un ARP con mac origen 
+                                                   //y un mac destino del cual nuestro mac destino(el que nos interesa) es el mac 
+                                                   //origen del ARP reply
+    
+    
+    
+    
+    si macDst!=NULL entonces
+
+        EnvioMensajeIp(mac, src, macDst, dest)
+        
+        return EXITO
+
+    sino
+
+       return FRACASO
+
+
+}
+
+
+
+int main(int argc, char* argv[]){
+
+    //Lo podemos coger de argv[]
+    ipv4_addr_t ip=ipdest; //Segun donde lo quieras mandar argv[2]
+    eth_iface_t eth=eth0; //Segun por la interfaz que quieras enviar argv[1]
+
+    
+    si arp_resolve(&eth, ip, mac) igual EXITO entonces
+
+        printf("Exito")
+    sino
+    printf("Fracaso")
+
+}
