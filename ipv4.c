@@ -46,7 +46,7 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
       printf("Se ha producido algún error al leer el fichero de rutas.\n");
     }
 
-    memcpy(layer->routing_table, routing_table, sizeof());
+    memcpy(layer->routing_table, routing_table, sizeof(ipv4_route_table_t *));
 
     
     eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
