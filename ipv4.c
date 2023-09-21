@@ -31,25 +31,24 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
     ipv4_addr_t netmask;
     ipv4_config_read( "ipv4_config_client.txt", ifname , addr,netmask);/* 2. Leer direcciones y subred de file_conf */
 
-    memcpy(layer->iface, ifname, 4);
     memcpy(layer->addr, addr, IPv4_ADDR_SIZE);
     memcpy(layer->netmask, netmask, IPv4_ADDR_SIZE);
 
 
-    ipv4_route_table_t * routing_table;
-    routing_table= ipv4_route_table_create(); //HAY QUE LIBERAR!!!!!!!! ipv4_route_table_free()
+    //ipv4_route_table_t * routing_table;
+    layer->routing_table=ipv4_route_table_create(); //HAY QUE LIBERAR!!!!!!!! ipv4_route_table_free()
 
-    int numRutasLeidas = ipv4_route_table_read("ipv4_route_table_client.txt", routing_table);/* 3. Leer tabla de reenvío IP de file_conf_route */
+    int numRutasLeidas = ipv4_route_table_read(file_conf, layer->routing_table);/* 3. Leer tabla de reenvío IP de file_conf_route */
     if(numRutasLeidas ==0){
       printf("No se ha leido ninguna ruta\n");
     }else if(numRutasLeidas ==-1){
       printf("Se ha producido algún error al leer el fichero de rutas.\n");
     }
 
-    memcpy(layer->routing_table, routing_table, sizeof(ipv4_route_table_t *));
+    //memcpy(layer->routing_table, routing_table, sizeof(ipv4_route_table_t *));
 
     
-    eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
+    layer->iface=eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
     return layer;
 
 }
