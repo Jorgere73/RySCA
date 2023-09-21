@@ -30,6 +30,7 @@ struct arp_frame
 int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
 {
     struct arp_frame arp;
+    memset(&arp, 0, sizeof(struct arp_frame ));
     // OBTENER MAC E IP PROPIA
     mac_addr_t macPropia;
     eth_getaddr(iface, macPropia);
@@ -38,9 +39,9 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
     printf("MAC propia %s", mac_str);
     printf("\n");
 
-    char* ipPropiaStr = "0.0.0.0";
-    ipv4_addr_t ipPropia;
-    ipv4_str_addr(ipPropiaStr,ipPropia);
+    //char* ipPropiaStr = "0.0.0.0";
+    //ipv4_addr_t ipPropia;
+    //ipv4_str_addr(ipPropiaStr,ipPropia);
 
     printf("INTERFAZ %s", eth_getname(iface));
     printf("\n");
@@ -52,7 +53,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
     memcpy(arp.dest_addr, mac_addr, MAC_ADDR_SIZE);
     memcpy(arp.dest_ip, ip_addr, IPv4_ADDR_SIZE);
     memcpy(arp.src_addr, macPropia, MAC_ADDR_SIZE);
-    memcpy(arp.src_ip, ipPropia, IPv4_ADDR_SIZE);
+    //memcpy(arp.src_ip, ipPropia, IPv4_ADDR_SIZE);
     arp.hardware_type = htons(0x0001);
     arp.type = htons(0x0800);
     arp.hardware_size = 0x06;
@@ -66,22 +67,22 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
 
 
     // Enviamos arp request
-    int a = eth_send(iface, MAC_FF, TYPE_IP, (unsigned char *) &arp, sizeof(arp));
-    if (a == -1)
+    int a = eth_send(iface, MAC_FF, TYPE_IP, (unsigned char *) &arp, sizeof(struct arp_frame));
+    if (a < 0)
     {
         printf("Ha ocurrido un error\n");
     }
-    else
+    else if (a > 0)
     {
         printf("Número de bytes enviados: %d\n", a);
         printf("Esto es lo que enviamos en str: \n %s", (unsigned char *) &arp);
     }
 
     // Recibimos el Reply
-    unsigned char *arp_reply_str = NULL;
+    struct arp_frame arp_reply;
     long int timeout =2000;
-    int b = eth_recv(iface, macPropia, TYPE_IP, arp_reply_str, sizeof(arp_reply_str), timeout);
-printf("llega\n");
+    int b = eth_recv(iface, macPropia, TYPE_IP, (unsigned char*) &arp_reply, sizeof(struct arp_frame), timeout);
+   
     if (b == -1)
     {
         printf("Ha ocurrido un error\n");
@@ -89,18 +90,19 @@ printf("llega\n");
     else
     {
         printf("Número de bytes recibidos: %d\n", b);
-        printf("el arp reply str es: %s", arp_reply_str);
+        printf("ARP Reply: ");
+        for (int i = 0; i < sizeof(struct arp_frame); i++) {
+            printf("%02x ", ((unsigned char *)&arp_reply)[i]);
+        }
+        printf("\n");
     }
 
-    struct arp_frame arp_reply ;
-    /*memcpy(&arp_reply, arp_reply_str, sizeof(arp_reply));*/
-
-
     mac_addr = arp_reply.src_addr;
-printf("llega\n");
-    char mac2print_str[MAC_ADDR_SIZE];
-    mac_addr_str(mac_addr, mac2print_str);
-    printf("MAC encontrada %s\n", mac2print_str);
+
+    char mac_received_str[MAC_STR_LENGTH];
+    mac_addr_str(arp_reply.src_addr, mac_received_str);
+    printf("MAC encontrada en la respuesta ARP: %s\n", mac_received_str);
+
 
     return 0;
 }
