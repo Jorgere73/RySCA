@@ -45,9 +45,12 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
     }else if(numRutasLeidas ==-1){
       printf("Se ha producido algún error al leer el fichero de rutas.\n");
     }
-    memcpy(layer->routing_table, routing_table, sizeof(routing_table));/* 1. Crear layer -> routing_table */
+
+    memcpy(layer->routing_table, routing_table, sizeof());
+
     
     eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
+    return layer;
 
 }
 
@@ -59,6 +62,7 @@ int ipv4_close (ipv4_layer_t * layer) {
   eth_close ( layer->iface );
 
 free(layer);
+return 0;
 }
 
 /* Dirección IPv4 a cero: "0.0.0.0" */

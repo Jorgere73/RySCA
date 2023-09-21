@@ -11,7 +11,12 @@
 #include <arpa/inet.h>
 
 #define ARP_HEADER_SIZE 28
-#define TYPE_IP 0x0806
+#define TYPE_ARP 0x0806
+#define HARDWARE_TYPE 0x0001
+#define TYPE_IP 0x0800
+#define PROTOCOL_SIZE 0x04
+#define OPCODE 0x0001
+#define HARDWARE_SIZE 0x06
 
 struct arp_frame
 {
@@ -34,7 +39,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
     // OBTENER MAC E IP PROPIA
     mac_addr_t macPropia;
     eth_getaddr(iface, macPropia);
-    char mac_str[MAC_ADDR_SIZE];
+    char mac_str[MAC_STR_LENGTH];
     mac_addr_str(macPropia, mac_str);
     printf("MAC propia %s", mac_str);
     printf("\n");
@@ -54,11 +59,11 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
     memcpy(arp.dest_ip, ip_addr, IPv4_ADDR_SIZE);
     memcpy(arp.src_addr, macPropia, MAC_ADDR_SIZE);
     //memcpy(arp.src_ip, ipPropia, IPv4_ADDR_SIZE);
-    arp.hardware_type = htons(0x0001);
-    arp.type = htons(0x0800);
-    arp.hardware_size = 0x06;
-    arp.protocol_size = 0x04;
-    arp.opcode = htons(0x0001);
+    arp.hardware_type = htons(HARDWARE_TYPE);
+    arp.type = htons(TYPE_IP);
+    arp.hardware_size = HARDWARE_SIZE;
+    arp.protocol_size = PROTOCOL_SIZE;
+    arp.opcode = htons(OPCODE);
     printf("Aqui ya hemos inicializado la estructura arp\n");
 
     mac_addr_t MAC_FF = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -67,7 +72,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
 
 
     // Enviamos arp request
-    int a = eth_send(iface, MAC_FF, TYPE_IP, (unsigned char *) &arp, sizeof(struct arp_frame));
+    int a = eth_send(iface, MAC_FF, TYPE_ARP, (unsigned char *) &arp, sizeof(struct arp_frame));
     if (a < 0)
     {
         printf("Ha ocurrido un error\n");
@@ -80,8 +85,11 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
 
     // Recibimos el Reply
     struct arp_frame arp_reply;
+    memset(&arp_reply, 0, sizeof(struct arp_frame ));
     long int timeout =2000;
-    int b = eth_recv(iface, macPropia, TYPE_IP, (unsigned char*) &arp_reply, sizeof(struct arp_frame), timeout);
+
+    //PROBLEMA AQUI
+    int b = eth_recv(iface, macPropia, TYPE_ARP, (unsigned char*) &arp_reply, sizeof(struct arp_frame), timeout);
    
     if (b == -1)
     {
