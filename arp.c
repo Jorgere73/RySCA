@@ -10,12 +10,26 @@
 #include <timerms.h>
 #include <arpa/inet.h>
 
+/*
+Obtener tiempo actual:
+    long long int timerms_time();
+(Re)iniciar temporizador:
+    long long int timerms_reset ( timerms_t * timer,long int timeout );--Empieza el timer de timeout ms
+        ‘timeout’ >= 0: ‘timer’ expira en ‘timeout’ ms
+        ‘timeout’ < 0: Temporizador “infinito” 
+
+Consultar estado temporizador:
+    long int timerms_elapsed ( timerms_t * timer );--Para ver cuanto lleva el timer activado
+    long int timerms_left ( timerms_t * timer );--Para ver cuanto tiempo de vida le queda al timer
+*/
+
 #define ARP_HEADER_SIZE 28
 #define TYPE_ARP 0x0806
 #define HARDWARE_TYPE 0x0001
 #define TYPE_IP 0x0800
 #define PROTOCOL_SIZE 0x04
-#define OPCODE 0x0001
+#define OPCODE_REQUEST 0x0001
+#define OPCODE_REPLY 0x0002
 #define HARDWARE_SIZE 0x06
 
 struct arp_frame
@@ -63,7 +77,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
     arp.type = htons(TYPE_IP);
     arp.hardware_size = HARDWARE_SIZE;
     arp.protocol_size = PROTOCOL_SIZE;
-    arp.opcode = htons(OPCODE);
+    arp.opcode = htons(OPCODE_REQUEST);
     printf("Aqui ya hemos inicializado la estructura arp\n");
 
     mac_addr_t MAC_FF = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -87,24 +101,37 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
     struct arp_frame arp_reply;
     memset(&arp_reply, 0, sizeof(struct arp_frame ));
     long int timeout =2000;
+     /* Inicializar temporizador para mantener timeout si se reciben tramas con
+     tipo incorrecto. */
+    timerms_t timer;
+    timerms_reset(&timer, timeout); //timer expira en timeout ms
 
-    //PROBLEMA AQUI
-    int b = eth_recv(iface, macPropia, TYPE_ARP, (unsigned char*) &arp_reply, sizeof(struct arp_frame), timeout);
+    do{
+        long int time_left = timerms_left(&timer);//Vemos cuanto tiempo le queda al timer para expirar
+        int b = eth_recv(iface, macPropia, TYPE_ARP, (unsigned char*) &arp_reply, sizeof(struct arp_frame), timeout);
    
-    if (b == -1)
-    {
-        printf("Ha ocurrido un error\n");
-    }
-    else
-    {
-        printf("Número de bytes recibidos: %d\n", b);
-        printf("ARP Reply: ");
-        for (int i = 0; i < sizeof(struct arp_frame); i++) {
-            printf("%02x ", ((unsigned char *)&arp_reply)[i]);
+        if (b == -1)
+        {
+            printf("Ha ocurrido un error\n");
+            return -1;
         }
-        printf("\n");
-    }
+        else
+        {
+            printf("Número de bytes recibidos: %d\n", b);
+            printf("ARP Reply: ");
+            for (int i = 0; i < sizeof(struct arp_frame); i++) {
+                printf("%02x ", ((unsigned char *)&arp_reply)[i]);
+            }
+            printf("\n");
+            continue;
+        }
+        int isIP = (memcmp(arp.dest_ip,arp_reply.src_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega en el reply
+        printf("%d\n",isIP);
+        int isReply = (ntohs(arp_reply.opcode) == OPCODE_REPLY);//Miramos si el opcode que nos llega en el reply es realmente de reply y no de otra cosa
+        
+    }while(!(isIP && isReply)); 
 
+    
     mac_addr = arp_reply.src_addr;
 
     char mac_received_str[MAC_STR_LENGTH];
