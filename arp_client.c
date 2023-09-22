@@ -14,6 +14,7 @@ int main(int argc, char* argv[]){
 		printf("ERROR\n");
 		printf("					USO\n");
 		printf("	arp_client <nombre_interfaz> <IP_destino>");
+        return 1;
 	}
     eth_iface_t * iface= eth_open(argv[1]);
     ipv4_addr_t ip_addr;
