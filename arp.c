@@ -115,7 +115,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
     //Declaramos e inicializamos las variables a 0
 
     do{
-        long int time_left = timerms_left(&timer);//Vemos cuanto tiempo le queda al timer para expirar
+        //long int time_left = timerms_left(&timer);//Vemos cuanto tiempo le queda al timer para expirar
         int b = eth_recv(iface, macPropia, TYPE_ARP, (unsigned char*) &arp_reply, sizeof(struct arp_frame), timeout);
    
         if (b == -1)
@@ -131,12 +131,10 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
                 printf("%02x ", ((unsigned char *)&arp_reply)[i]);
             }
             printf("\n");
-            continue;
+            //continue -> sobra
         }
         isIP = (memcmp(arp.dest_ip,arp_reply.src_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega en el reply
-        printf("%d\n",isIP);
         isReply = (ntohs(arp_reply.opcode) == OPCODE_REPLY);//Miramos si el opcode que nos llega en el reply es realmente de reply y no de otra cosa
-        
     }while(!(isIP && isReply)); 
 
     
@@ -145,7 +143,5 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
     char mac_received_str[MAC_STR_LENGTH];
     mac_addr_str(arp_reply.src_addr, mac_received_str);
     printf("MAC encontrada en la respuesta ARP: %s\n", mac_received_str);
-
-
     return 0;
 }
