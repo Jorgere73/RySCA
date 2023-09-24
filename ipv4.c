@@ -29,7 +29,7 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
     char ifname[4];
     ipv4_addr_t addr;
     ipv4_addr_t netmask;
-    ipv4_config_read( "ipv4_config_client.txt", ifname , addr,netmask);/* 2. Leer direcciones y subred de file_conf */
+    ipv4_config_read( file_conf, ifname , addr,netmask);/* 2. Leer direcciones y subred de file_conf */
 
     memcpy(layer->addr, addr, IPv4_ADDR_SIZE);
     memcpy(layer->netmask, netmask, IPv4_ADDR_SIZE);
@@ -38,7 +38,7 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
     //ipv4_route_table_t * routing_table;
     layer->routing_table=ipv4_route_table_create(); //HAY QUE LIBERAR!!!!!!!! ipv4_route_table_free()
 
-    int numRutasLeidas = ipv4_route_table_read(file_conf, layer->routing_table);/* 3. Leer tabla de reenvío IP de file_conf_route */
+    int numRutasLeidas = ipv4_route_table_read(file_conf_route, layer->routing_table);/* 3. Leer tabla de reenvío IP de file_conf_route */
     if(numRutasLeidas ==0){
       printf("No se ha leido ninguna ruta\n");
     }else if(numRutasLeidas ==-1){
@@ -64,6 +64,20 @@ free(layer);
 return 0;
 }
 
+int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len) {
+
+//Metodo para enviar una trama ip
+
+
+
+
+}
+
+int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) {
+
+//metodo para recibir una trama ip
+  
+}
 /* Dirección IPv4 a cero: "0.0.0.0" */
 ipv4_addr_t IPv4_ZERO_ADDR = { 0, 0, 0, 0 };
 
