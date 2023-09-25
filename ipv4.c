@@ -64,20 +64,20 @@ free(layer);
 return 0;
 }
 
-int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len) {
+/*int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len) {
 
 //Metodo para enviar una trama ip
-
-
-
-
 }
+QUITAD COMENTARIO CUANDO VAYAIS A EDITAR
+*/
 
-int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) {
+/*int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) {
 
 //metodo para recibir una trama ip
   
 }
+QUITAD COMENTARIO CUANDO VAYAIS A EDITAR
+*/
 /* Dirección IPv4 a cero: "0.0.0.0" */
 ipv4_addr_t IPv4_ZERO_ADDR = { 0, 0, 0, 0 };
 
