@@ -1,7 +1,6 @@
 
 #include "arp.h"
 #include "eth.h"
-#include "ipv4.h"
 #include <unistd.h>
 #include <libgen.h>
 #include <string.h>
@@ -10,17 +9,18 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "ipv4_route_table.h"
 #include "ipv4_config.h"
+#include "ipv4_route_table.h"
+#include "ipv4.h"
 
 
 
-typedef struct ipv4_layer {
+struct ipv4_layer {
 eth_iface_t * iface;  /*iface=eth_open("eth1"); */
 ipv4_addr_t addr; /* 192.168.1.1 */
 ipv4_addr_t netmask; /* 255.255.255.0 */
 ipv4_route_table_t * routing_table;
-} ipv4_layer_t ; 
+}; 
 
 ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
   
