@@ -6,7 +6,10 @@
 #define IPv4_ADDR_SIZE 4
 #define IPv4_STR_MAX_LENGTH 16
 
+//Estructura que contiene a la interfaz de un host (eth_iface_t * iface), su dirección IP(ipv4_addr_t addr),
+//la máscara de red(ipv4_addr_t netmask), y su tabla de enrutamiento (ipv4_route_table_t * routing_table)
 typedef struct ipv4_layer ipv4_layer_t;
+struct ipv4_frame;
 
 typedef unsigned char ipv4_addr_t [IPv4_ADDR_SIZE];
 
