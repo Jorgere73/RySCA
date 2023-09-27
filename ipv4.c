@@ -87,6 +87,9 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
 
 //Metodo para enviar una trama ip
 struct ipv4_frame pkt_ip_send;
+mac_addr_t macdst;
+memset(&macdst, 0, sizeof(mac_addr_t));
+//Variable donde guardaremos la MAC de destino
 memset(&pkt_ip_send, 0, sizeof(struct ipv4_frame)); //Limpiamos la estructura para que no haya basura
 
 //INICIALIZAMOS LA ESTRUCTURA
@@ -102,15 +105,27 @@ memcpy(pkt_ip_send.dst_ip, dst, IPv4_ADDR_SIZE);
 
 //Ahora hacemos el lookup 
 
-int route = ipv4_route_lookup(,dst); //que ruta hay que poner?
+ipv4_route_t* route = ipv4_route_table_lookup(layer->routing_table, dst);
+//route es la ruta más rápida encontrada en la tabla de rutas del layer hasta la dirección dst.
+//De no funcionar, devuelve -1
 
-//Si la ip es el siguiente salto (0.0.0.0), directamente la enviamos con eth
-eth_send(,,TYPE_IP,payload,payload_len)//interfaz?? //MAC
-//Si lookup nos da un sig salto entonces arp para la mac y luego eth
-mac_addr_t macdest;
-arp_resolve(,,macdest)//que interfaz ponemos?
-eth_send(,macdest,TYPE_IP,payload,payload_len)//interfaz??
+//Si el destino se encuentra en la misma subred que nuestro host, encontramos su MAC y enviamos
+if(route->gateway_addr == 0)
+{
+  arp_resolve(layer->iface, dst, macdst);
+  //Sacamos la dirección MAC de destino
+  
+  eth_send(layer->iface, macdst, protocol, payload, payload_len);
+  //No estoy seguro de cómo enviar pkt_ip_send, así solo enviamos el payload
+}
+//Si el destino está fuera de la subred (hay salto), tendremos que sacar la MAC del siguiente salto y enviárselo a él
+else
+{
+  arp_resolve(layer->iface, route->gateway_addr, macdst);
+  //Sacamos dirección MAC del salto
+  eth_send(layer->iface, macdst, protocol, payload, payload_len);
 
+}
 }
 
 /*int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) {
