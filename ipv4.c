@@ -10,9 +10,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ipv4_config.h"
+<<<<<<< HEAD
+#define HEADER_LEN_IP 20
+#define VERSION_HEADERLEN 0x45
+#define FLAGS_FO 0x40
+=======
 #include "ipv4_route_table.h"
-#include "ipv4_config.h"
+#include "ipv4.h"
 
+>>>>>>> 393278d83aa7a3ccc995ea93b8d997a161546437
 
 
 struct ipv4_layer {
@@ -20,7 +26,22 @@ eth_iface_t * iface;  /*iface=eth_open("eth1"); */
 ipv4_addr_t addr; /* 192.168.1.1 */
 ipv4_addr_t netmask; /* 255.255.255.0 */
 ipv4_route_table_t * routing_table;
-} ipv4_layer_t ; 
+}; 
+
+struct ipv4_frame
+{
+  uint8_t version_headerLen;
+  uint8_t dscp;
+  uint16_t total_length;
+  uint16_t identification;
+  uint8_t flags_fragmentOffset;
+  uint8_t ttl;
+  uint8_t protocol;
+  uint16_t checksum;
+  ipv4_addr_t src_ip;
+  ipv4_addr_t dst_ip;
+
+};
 
 ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
   
@@ -67,10 +88,27 @@ return 0;
 /*int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len) {
 
 //Metodo para enviar una trama ip
+<<<<<<< HEAD
+struct ipv4_frame pkt_ip_send;
+memset(&pkt_ip_send, 0, sizeof(struct ipv4_frame)); //Limpiamos la estructura para que no haya basura
 
+//INICIALIZAMOS LA ESTRUCTURA
+pkt_ip_send.version_headerLen = VERSION_HEADERLEN;
+pkt_ip_send.total_length = HEADER_LEN_IP+payload_len;
+pkt_ip_send.identification = 0x2816;
+pkt_ip_send.flags_fragmentOffset = FLAGS_FO; 
+pkt_ip_send.ttl = 64;
+pkt_ip_send.protocol = protocol;
+pkt_ip_send.checksum = ipv4_checksum(payload,payload_len);
+memcpy(pkt_ip_send.src_ip, layer->addr, IPv4_ADDR_SIZE);
+memcpy(pkt_ip_send.dest_addr, dst, IPv4_ADDR_SIZE);
 
+//Ahora hacemos el lookup 
+//Si la ip es el siguiente salto (0.0.0.0), directamente la enviamos con eth
+//Si lookup nos da un sig salto entonces arp para la mac y luego eth
 
-
+=======
+>>>>>>> 393278d83aa7a3ccc995ea93b8d997a161546437
 }
 QUITAD COMENTARIO CUANDO VAYAIS A EDITAR
 */
