@@ -5,6 +5,8 @@
 #include <string.h>
 #include <errno.h>
 
+#define IPV4_SUBNET_MAX_LENGTH 30
+
 
 /* ipv4_route_t * ipv4_route_create
  * ( ipv4_addr_t subnet, ipv4_addr_t mask, char* iface, ipv4_addr_t gw );

@@ -105,7 +105,9 @@ memcpy(pkt_ip_send.dst_ip, dst, IPv4_ADDR_SIZE);
 
 //Ahora hacemos el lookup 
 
-ipv4_route_t* route = ipv4_route_table_lookup(layer->routing_table, dst);
+ipv4_route_t* route = malloc(sizeof(ipv4_route_t));
+memset(route, 0, sizeof(ipv4_route_t));
+route = ipv4_route_table_lookup(layer->routing_table, dst);
 //route es la ruta más rápida encontrada en la tabla de rutas del layer hasta la dirección dst.
 //De no funcionar, devuelve -1
 
@@ -117,6 +119,7 @@ if(route->gateway_addr == 0)
   
   eth_send(layer->iface, macdst, protocol, payload, payload_len);
   //No estoy seguro de cómo enviar pkt_ip_send, así solo enviamos el payload
+  return 0;
 }
 //Si el destino está fuera de la subred (hay salto), tendremos que sacar la MAC del siguiente salto y enviárselo a él
 else
@@ -124,8 +127,9 @@ else
   arp_resolve(layer->iface, route->gateway_addr, macdst);
   //Sacamos dirección MAC del salto
   eth_send(layer->iface, macdst, protocol, payload, payload_len);
-
+  return 0;
 }
+return -1;
 }
 
 /*int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) {

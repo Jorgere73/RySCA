@@ -3,11 +3,15 @@
 #include "ipv4.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <libgen.h>
+
 #define IP_MTU 1480 //1500 -20 cabecera
+#define DEFAULT_PAYLOAD_LEN 500
+#define TYPE_IP 0x8
  
-//int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len)
+//int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int DEFAULT_PAYLOAD_LEN)
 
 int main(int argc, char* argv[]){
 
@@ -23,22 +27,24 @@ int main(int argc, char* argv[]){
         fprintf(stderr, "ERROR en ipv4_open()");
     }
     
-    ipv4_addr_t dst = argv[1];
-    uint8_t protocol = argv[2];
+    ipv4_addr_t dst;
+    memset(&dst, 0, sizeof(ipv4_addr_t));
+    ipv4_str_addr(argv[1], dst);
+    uint8_t protocol = 0;
+    (uint8_t)(protocol, argv[2], sizeof(uint8_t));
 
     /* Generar payload */
-    unsigned char payload[payload_len];
+    unsigned char payload[DEFAULT_PAYLOAD_LEN];
     int i;
-    for (i=0; i<payload_len; i++) {
+    for (i=0; i<DEFAULT_PAYLOAD_LEN; i++) {
         payload[i] = (unsigned char) i;
     }  
-    int payload_len = DEFAULT_PAYLOAD_LENGTH;
 
-    printf("Enviando %d bytes al Servidor IP:\n", payload_len);
-    print_pkt(payload, payload_len, 0);
+    printf("Enviando %d bytes al Servidor IP:\n", DEFAULT_PAYLOAD_LEN);
+    print_pkt(payload, DEFAULT_PAYLOAD_LEN, 0);
 
-    //int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len)
-    err = ipv4_send(layer,dst,protocol, payload, payload_len); 
+    //int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int DEFAULT_PAYLOAD_LEN)
+    int err = ipv4_send(layer,dst,protocol, payload, DEFAULT_PAYLOAD_LEN); 
     if (err == -1) {
         fprintf(stderr, "ERROR en ipv4_send()\n");
         exit(-1);
