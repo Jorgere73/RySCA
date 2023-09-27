@@ -75,11 +75,31 @@ ipv4_route_t * ipv4_route_create
  */
 int ipv4_route_lookup ( ipv4_route_t * route, ipv4_addr_t addr )
 {
-  int prefix_length = -1;
+  //int prefix_length = -1;
+// Paso 1: Obtener representaciones numéricas de las direcciones IP y la máscara de subred.
+uint32_t subnet_network = *((uint32_t *)&route->subnet_addr);
+uint32_t addr_network = *((uint32_t *)&addr);
+uint32_t subnet_mask = *((uint32_t *)&route->subnet_mask);
 
-  /* TODO: Debe implementar este método */
+// Paso 2: Realizar la comparación de las direcciones IP utilizando la máscara de subred.
+if ((subnet_network & subnet_mask) == (addr_network & subnet_mask)) {
+// Paso 3: Si las direcciones coinciden, calcular la longitud de la máscara de subred.
+  int mask_length = 0;
+  uint32_t mask = 0x80000000;  // Bit más significativo
 
-  return prefix_length;
+  // Paso 4: Recorrer la máscara de subred para contar los bits a uno.
+  while ((mask_length < IPV4_SUBNET_MAX_LENGTH) && (subnet_mask & mask)) {//hacemos la operacion logica AND
+    mask >>= 1;
+    mask_length++;
+  }
+  
+  // Paso 5: Devolver la longitud de la máscara de subred.
+  return mask_length;
+} else {
+  // Paso 6: Si las direcciones no coinciden, devolver -1.
+return -1;
+}
+//return prefix_length;
 }
 
 /* void ipv4_route_print ( ipv4_route_t * route );
