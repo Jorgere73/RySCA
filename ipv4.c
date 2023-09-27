@@ -9,16 +9,12 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "ipv4_config.h"
-<<<<<<< HEAD
+#include "ipv4_config.h" 
+#include "arp.h" 
+
 #define HEADER_LEN_IP 20
 #define VERSION_HEADERLEN 0x45
 #define FLAGS_FO 0x40
-=======
-#include "ipv4_route_table.h"
-#include "ipv4.h"
-
->>>>>>> 393278d83aa7a3ccc995ea93b8d997a161546437
 
 
 struct ipv4_layer {
@@ -84,11 +80,9 @@ int ipv4_close (ipv4_layer_t * layer) {
 free(layer);
 return 0;
 }
-
-/*int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len) {
+int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len) {
 
 //Metodo para enviar una trama ip
-<<<<<<< HEAD
 struct ipv4_frame pkt_ip_send;
 memset(&pkt_ip_send, 0, sizeof(struct ipv4_frame)); //Limpiamos la estructura para que no haya basura
 
@@ -97,21 +91,24 @@ pkt_ip_send.version_headerLen = VERSION_HEADERLEN;
 pkt_ip_send.total_length = HEADER_LEN_IP+payload_len;
 pkt_ip_send.identification = 0x2816;
 pkt_ip_send.flags_fragmentOffset = FLAGS_FO; 
-pkt_ip_send.ttl = 64;
+pkt_ip_send.ttl = 64; //Hay que ver que numero ponemos de ttl(Puede que sea 64)
 pkt_ip_send.protocol = protocol;
 pkt_ip_send.checksum = ipv4_checksum(payload,payload_len);
 memcpy(pkt_ip_send.src_ip, layer->addr, IPv4_ADDR_SIZE);
 memcpy(pkt_ip_send.dest_addr, dst, IPv4_ADDR_SIZE);
 
 //Ahora hacemos el lookup 
-//Si la ip es el siguiente salto (0.0.0.0), directamente la enviamos con eth
-//Si lookup nos da un sig salto entonces arp para la mac y luego eth
 
-=======
->>>>>>> 393278d83aa7a3ccc995ea93b8d997a161546437
+int route = ipv4_route_lookup(,dst); //que ruta hay que poner?
+
+//Si la ip es el siguiente salto (0.0.0.0), directamente la enviamos con eth
+eth_send(,,TYPE_IP,payload,payload_len)//interfaz?? //MAC
+//Si lookup nos da un sig salto entonces arp para la mac y luego eth
+mac_addr_t macdest;
+arp_resolve(,,macdest)//que interfaz ponemos?
+eth_send(,macdest,TYPE_IP,payload,payload_len)//interfaz??
+
 }
-QUITAD COMENTARIO CUANDO VAYAIS A EDITAR
-*/
 
 /*int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) {
 
