@@ -8,7 +8,7 @@
 #include <libgen.h>
 
 
-#define DEFAULT_PAYLOAD_LEN 500
+#define DEFAULT_PAYLOAD_LEN 200
 
  
 //int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int DEFAULT_PAYLOAD_LEN)

@@ -13,9 +13,7 @@
 #include "ipv4_route_table.h"
 #include "arp.h" 
 
-#define HEADER_LEN_IP 20
-#define VERSION_HEADERLEN 0x45
-#define FLAGS_FO 0x0040
+
 
 
 struct ipv4_layer {
@@ -99,7 +97,7 @@ pkt_ip_send.identification = 0x2816;
 pkt_ip_send.flags_fragmentOffset = FLAGS_FO; 
 pkt_ip_send.ttl = 64; //Hay que ver que numero ponemos de ttl(Puede que sea 64)
 pkt_ip_send.protocol = protocol;
-pkt_ip_send.checksum = ipv4_checksum((unsigned char*) &pkt_ip_send,20);
+pkt_ip_send.checksum = ipv4_checksum((unsigned char*) &pkt_ip_send,HEADER_LEN_IP);
 memcpy(pkt_ip_send.src_ip, layer->addr, IPv4_ADDR_SIZE);
 memcpy(pkt_ip_send.dst_ip, dst, IPv4_ADDR_SIZE);
 pkt_ip_send.payload=payload;//Ahora hacemos el lookup 
@@ -112,7 +110,7 @@ route = ipv4_route_table_lookup(layer->routing_table, dst);
 //Si el destino se encuentra en la misma subred que nuestro host, encontramos su MAC y enviamos
 if(memcmp(route->gateway_addr, IPv4_ZERO_ADDR, IPv4_ADDR_SIZE)==0)
 {
-
+  printf(eth_getname(layer->iface));
   int arp = arp_resolve(layer->iface, dst, macdst);  
   //Sacamos la dirección MAC de destino
   if (arp < 0)
@@ -153,7 +151,7 @@ else
         printf("Enviamos bien el arp");
     }
   //Sacamos dirección MAC del salto
-  int a = eth_send(layer->iface, macdst, protocol, (unsigned char*)&pkt_ip_send, payload_len+20); 
+  int a = eth_send(layer->iface, macdst, protocol, (unsigned char*)&pkt_ip_send, payload_len+HEADER_LEN_IP); 
   if (a < 0)
     {
         printf("Ha ocurrido un error\n");
