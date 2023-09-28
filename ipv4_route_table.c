@@ -1,5 +1,5 @@
 #include "ipv4_route_table.h"
-
+#include "log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -85,52 +85,49 @@ int ipv4_route_lookup ( ipv4_route_t * route, ipv4_addr_t addr )
   // tmp[0] = route->subnet_mask[0] & addr[0];
   //   IF no_iguales --> return -1
   //   IF iguales --> cuento y devuelvo número 1s route->subnet_mask
-ipv4_addr_t tmp;
-for(int i = 0;i<4 ;i++){
-  tmp[i] = route->subnet_mask[i] & addr[i];
-}
-if(memcmp(tmp,route->subnet_addr,IPv4_ADDR_SIZE) == 0){
-  for(int i = 0; i<4; i++){
-    switch(route->subnet_mask[i]){
-    case 255: 
-    prefix_length=prefix_length+8;
-    break;
-    case 254:
-    prefix_length=prefix_length+7;
-    break;    
-    case 252:
-    prefix_length=prefix_length+6;
-    break;
-    case 248:
-    prefix_length=prefix_length+5;
-    break;
-    case 240:
-    prefix_length=prefix_length+4;
-    break;    
-    case 224:
-    prefix_length=prefix_length+3;
-    break;    
-    case 192:
-    prefix_length=prefix_length+2;
-    break;
-    case 128:
-    prefix_length=prefix_length+1;
-    break;    
-    case 0:
-    prefix_length=prefix_length+0;
-    break;    
-
+  ipv4_addr_t tmp;
+  for(int i = 0;i<4 ;i++){
+    tmp[i] = route->subnet_mask[i] & addr[i];
   }
+  if(memcmp(tmp,route->subnet_addr,IPv4_ADDR_SIZE) == 0){
+    for(int i = 0; i<4; i++){
+      switch(route->subnet_mask[i]){
+      case 255: 
+      prefix_length=prefix_length+8;
+      break;
+      case 254:
+      prefix_length=prefix_length+7;
+      break;    
+      case 252:
+      prefix_length=prefix_length+6;
+      break;
+      case 248:
+      prefix_length=prefix_length+5;
+      break;
+      case 240:
+      prefix_length=prefix_length+4;
+      break;    
+      case 224:
+      prefix_length=prefix_length+3;
+      break;    
+      case 192:
+      prefix_length=prefix_length+2;
+      break;
+      case 128:
+      prefix_length=prefix_length+1;
+      break;    
+      case 0:
+      prefix_length=prefix_length+0;
+      break;    
+
+    }
+    }
+  log_trace("Prefijo de la red: %d", prefix_length);
+
+  }else{
+    return -1;
   }
-printf("Num unos: %d\n", prefix_length);
-
-}else{
-  return -1;
-}
-return prefix_length;
-
-
-
+  return prefix_length;
 }
 
 /* void ipv4_route_print ( ipv4_route_t * route );

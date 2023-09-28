@@ -12,7 +12,7 @@
 #include "ipv4_config.h" 
 #include "ipv4_route_table.h"
 #include "arp.h" 
-
+#include "log.h"
 
 
 
@@ -46,7 +46,7 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
     ipv4_addr_t addr;
     ipv4_addr_t netmask;
     ipv4_config_read( file_conf, ifname , addr,netmask);
-    printf("%s\n",ifname);
+    log_trace("Estamos usando la interfaz: %s",ifname);
     /* 2. Leer direcciones y subred de file_conf */
 
     memcpy(layer->addr, addr, IPv4_ADDR_SIZE);
@@ -58,9 +58,9 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
 
     int numRutasLeidas = ipv4_route_table_read(file_conf_route, layer->routing_table);/* 3. Leer tabla de reenvío IP de file_conf_route */
     if(numRutasLeidas == 0){
-      printf("No se ha leido ninguna ruta\n");
+      log_trace("No se ha leido ninguna ruta");
     }else if(numRutasLeidas ==-1){
-      printf("Se ha producido algún error al leer el fichero de rutas.\n");
+      log_trace("Se ha producido algún error al leer el fichero de rutas.");
     }
 
     //memcpy(layer->routing_table, routing_table, sizeof(ipv4_route_table_t *));
@@ -118,24 +118,24 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
     //Sacamos la dirección MAC de destino
     if (arp < 0)
       {
-          printf("Ha ocurrido un error en el arp_resolve(el destino esta en nuestra subred)\n");
+          log_trace("Ha ocurrido un error en el arp_resolve(el destino esta en nuestra subred)\n");
       }
       else if (arp == 0)
       {
           
-          printf("Enviamos bien el arp");
+          log_trace("Enviamos bien el arp");
       }
     
     
     int a = eth_send(layer->iface, macdst, protocol, payload, payload_len);
     if (a < 0)
       {
-          printf("Ha ocurrido un error en eth_send\n");
+          log_trace("Ha ocurrido un error en eth_send\n");
       }
       else if (a > 0)
       {
-          printf("Número de bytes enviados: %d\n", a);
-          printf("Esto es lo que enviamos en str: \n %s", (unsigned char *) &pkt_ip_send);
+          log_trace("Número de bytes enviados: %d\n", a);
+          log_trace("Esto es lo que enviamos en str: \n %s", (unsigned char *) &pkt_ip_send);
       }
     //No estoy seguro de cómo enviar pkt_ip_send, así solo enviamos el payload
     return 0;
@@ -146,24 +146,24 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
     int arp = arp_resolve(layer->iface, route->gateway_addr, macdst);
     if (arp < 0)
       {
-          printf("Ha ocurrido un error en el arp_resolve(el destino no esta en nuestra subred)\n");
+          log_trace("Ha ocurrido un error en el arp_resolve(el destino no esta en nuestra subred)");
       }
       else if (arp == 0)
       {
           
-          printf("Enviamos bien el arp");
+          log_trace("Enviamos bien el arp");
       }
     //Sacamos dirección MAC del salto
     int a = eth_send(layer->iface, macdst, protocol, (unsigned char*)&pkt_ip_send, payload_len+HEADER_LEN_IP); 
     if (a < 0)
       {
-          printf("Ha ocurrido un error\n");
+          log_trace("Ha ocurrido un error");
           return -1;
       }
       else if (a > 0)
       {
-          printf("Número de bytes enviados: %d\n", a);
-          printf("Esto es lo que enviamos en str: \n %s", (unsigned char *) &pkt_ip_send);
+          log_trace("Número de bytes enviados: %d", a);
+          log_trace("Esto es lo que enviamos en str: ç%s", (unsigned char *) &pkt_ip_send);
           return 0;
       }
    return 0;
@@ -192,17 +192,16 @@ struct ipv4_frame pkt_ip_recv;
     int eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, sizeof(struct ipv4_frame), timeout);
     if (eth == -1)
         {
-            printf("Ha ocurrido un error\n");
+            log_trace("Ha ocurrido un error");
             return -1;
         }
         else
         {
-            printf("Número de bytes recibidos: %d\n", eth);
-            printf("IPv4 Recibido: ");
+            log_trace("Número de bytes recibidos: %d", eth);
+            log_trace("IPv4 Recibido: ");
             for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
-                printf("%02x ", ((unsigned char *)&pkt_ip_recv)[i]);
+                log_trace("%02x ", ((unsigned char *)&pkt_ip_recv)[i]);
             }
-            printf("\n");
         }
   //Hacemos las comprobaciones necesarias(Que esta bien) para salir del do while
   
