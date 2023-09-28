@@ -1,5 +1,5 @@
 # ipv4_config_client.txt
 #
-Interface enp0s3
-IPv4Address 10.0.2.15
+Interface eth0
+IPv4Address 163.117.144.106
 SubnetMask 255.255.255.0

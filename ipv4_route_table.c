@@ -77,31 +77,60 @@ ipv4_route_t * ipv4_route_create
  */
 int ipv4_route_lookup ( ipv4_route_t * route, ipv4_addr_t addr )
 {
-  //int prefix_length = -1;
-// Paso 1: Obtener representaciones numéricas de las direcciones IP y la máscara de subred.
-uint32_t subnet_network = *((uint32_t *)&route->subnet_addr);
-uint32_t addr_network = *((uint32_t *)&addr);
-uint32_t subnet_mask = *((uint32_t *)&route->subnet_mask);
+  int prefix_length = 0;
 
-// Paso 2: Realizar la comparación de las direcciones IP utilizando la máscara de subred.
-if ((subnet_network & subnet_mask) == (addr_network & subnet_mask)) {
-// Paso 3: Si las direcciones coinciden, calcular la longitud de la máscara de subred.
-  int mask_length = 0;
-  uint32_t mask = 0x80000000;  // Bit más significativo
 
-  // Paso 4: Recorrer la máscara de subred para contar los bits a uno.
-  while ((mask_length < IPV4_SUBNET_MAX_LENGTH) && (subnet_mask & mask)) {//hacemos la operacion logica AND
-    mask >>= 1;
-    mask_length++;
-  }
-  
-  // Paso 5: Devolver la longitud de la máscara de subred.
-  return mask_length;
-} else {
-  // Paso 6: Si las direcciones no coinciden, devolver -1.
-return -1;
+  // tmp = route->subnet_mask AND addr
+  // CMP tmp, route->subnet_addr
+  // tmp[0] = route->subnet_mask[0] & addr[0];
+  //   IF no_iguales --> return -1
+  //   IF iguales --> cuento y devuelvo número 1s route->subnet_mask
+ipv4_addr_t tmp;
+for(int i = 0;i<4 ;i++){
+  tmp[i] = route->subnet_mask[i] & addr[i];
 }
-//return prefix_length;
+if(memcmp(tmp,route->subnet_addr,IPv4_ADDR_SIZE) == 0){
+  for(int i = 0; i<4; i++){
+    switch(route->subnet_mask[i]){
+    case 255: 
+    prefix_length=prefix_length+8;
+    break;
+    case 254:
+    prefix_length=prefix_length+7;
+    break;    
+    case 252:
+    prefix_length=prefix_length+6;
+    break;
+    case 248:
+    prefix_length=prefix_length+5;
+    break;
+    case 240:
+    prefix_length=prefix_length+4;
+    break;    
+    case 224:
+    prefix_length=prefix_length+3;
+    break;    
+    case 192:
+    prefix_length=prefix_length+2;
+    break;
+    case 128:
+    prefix_length=prefix_length+1;
+    break;    
+    case 0:
+    prefix_length=prefix_length+0;
+    break;    
+
+  }
+  }
+printf("Num unos: %d\n", prefix_length);
+
+}else{
+  return -1;
+}
+return prefix_length;
+
+
+
 }
 
 /* void ipv4_route_print ( ipv4_route_t * route );

@@ -106,6 +106,7 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   
   ipv4_route_t* route;
   route = ipv4_route_table_lookup(layer->routing_table, dst);
+  
   //route es la ruta más rápida encontrada en la tabla de rutas del layer hasta la dirección dst.
   //De no funcionar, devuelve -1
   
