@@ -17,7 +17,7 @@
  * encaminamiento sea necesario añadir más campos a esta estructura, así como
  * modificar las funciones asociadas. ipv4_addr_t subnet_addr; ipv4_addr_t subnet_mask; char iface[IFACE_NAME_MAX_LENGTH]; ipv4_addr_t gateway_addr;
  */
-typedef struct ipv4_route {
+typedef struct ipv4_route {//es una fila de la tabla
   ipv4_addr_t subnet_addr;
   ipv4_addr_t subnet_mask;
   char iface[IFACE_NAME_MAX_LENGTH];

@@ -5,6 +5,7 @@
 
 #define IPv4_ADDR_SIZE 4
 #define IPv4_STR_MAX_LENGTH 16
+#define IP_MTU 1480 //1500 -20 cabecera
 
 //Estructura que contiene a la interfaz de un host (eth_iface_t * iface), su dirección IP(ipv4_addr_t addr),
 //la máscara de red(ipv4_addr_t netmask), y su tabla de enrutamiento (ipv4_route_table_t * routing_table)

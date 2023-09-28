@@ -7,7 +7,7 @@
 #include <unistd.h>
 #include <libgen.h>
 
-#define IP_MTU 1480 //1500 -20 cabecera
+
 #define DEFAULT_PAYLOAD_LEN 500
 #define TYPE_IP 0x8
  
