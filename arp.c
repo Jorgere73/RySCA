@@ -23,14 +23,7 @@ Consultar estado temporizador:
     long int timerms_left ( timerms_t * timer );--Para ver cuanto tiempo de vida le queda al timer
 */
 
-#define ARP_HEADER_SIZE 28
-#define TYPE_ARP 0x0806
-#define HARDWARE_TYPE 0x0001
-#define TYPE_IP 0x0800
-#define PROTOCOL_SIZE 0x04
-#define OPCODE_REQUEST 0x0001
-#define OPCODE_REPLY 0x0002
-#define HARDWARE_SIZE 0x06
+
 
 struct arp_frame
 {

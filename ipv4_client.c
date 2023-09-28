@@ -9,13 +9,13 @@
 
 
 #define DEFAULT_PAYLOAD_LEN 500
-#define TYPE_IP 0x8
+
  
 //int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int DEFAULT_PAYLOAD_LEN)
 
 int main(int argc, char* argv[]){
 
-	if(argc!=2){
+	if(argc!=3){
 		printf("ERROR\n");
 		printf("					USO\n");
 		printf("	ipv4_client.c <IP_destino> <protocolo>");
@@ -30,8 +30,9 @@ int main(int argc, char* argv[]){
     ipv4_addr_t dst;
     memset(&dst, 0, sizeof(ipv4_addr_t));
     ipv4_str_addr(argv[1], dst);
-    uint8_t protocol = 0;
-    (uint8_t)(protocol, argv[2], sizeof(uint8_t));
+    uint8_t protocol = atoi(argv[2]);
+    
+    
 
     /* Generar payload */
     unsigned char payload[DEFAULT_PAYLOAD_LEN];
@@ -53,7 +54,7 @@ int main(int argc, char* argv[]){
     unsigned char buffer[IP_MTU]; //
     ipv4_addr_t sender;
     long int timeout = 2000;
-    int len= ipv4_recv(layer,TYPE_IP,buffer,sender,IP_MTU,timeout);
+    int len= ipv4_recv(layer,(uint8_t)TYPE_IP,buffer,sender,IP_MTU,timeout);
     if (len == -1) {
         fprintf(stderr, " ERROR en ipv4_recv()\n");
     } else if (len == 0) {

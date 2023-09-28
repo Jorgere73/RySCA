@@ -15,7 +15,7 @@
 
 #define HEADER_LEN_IP 20
 #define VERSION_HEADERLEN 0x45
-#define FLAGS_FO 0x40
+#define FLAGS_FO 0x0040
 
 
 struct ipv4_layer {
@@ -31,14 +31,13 @@ struct ipv4_frame
   uint8_t dscp;
   uint16_t total_length;
   uint16_t identification;
-  uint8_t flags_fragmentOffset;
+  uint16_t flags_fragmentOffset;
   uint8_t ttl;
   uint8_t protocol;
   uint16_t checksum;
   ipv4_addr_t src_ip;
   ipv4_addr_t dst_ip;
-  unsigned char* payload;
-
+  unsigned char * payload;
 };
 
 ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
@@ -101,11 +100,9 @@ pkt_ip_send.flags_fragmentOffset = FLAGS_FO;
 pkt_ip_send.ttl = 64; //Hay que ver que numero ponemos de ttl(Puede que sea 64)
 pkt_ip_send.protocol = protocol;
 pkt_ip_send.checksum = ipv4_checksum((unsigned char*) &pkt_ip_send,20);
-//va sobre la cabecera el checksum, nada de payload 
 memcpy(pkt_ip_send.src_ip, layer->addr, IPv4_ADDR_SIZE);
 memcpy(pkt_ip_send.dst_ip, dst, IPv4_ADDR_SIZE);
-
-//Ahora hacemos el lookup 
+pkt_ip_send.payload=payload;//Ahora hacemos el lookup 
 
 ipv4_route_t* route;
 route = ipv4_route_table_lookup(layer->routing_table, dst);
@@ -113,34 +110,117 @@ route = ipv4_route_table_lookup(layer->routing_table, dst);
 //De no funcionar, devuelve -1
 
 //Si el destino se encuentra en la misma subred que nuestro host, encontramos su MAC y enviamos
-if(memcmp(route->gateway_addr, IPv4_ZERO_ADDR, sizeof(ipv4_addr_t)) == 0)
+if(memcmp(route->gateway_addr, IPv4_ZERO_ADDR, IPv4_ADDR_SIZE)==0)
 {
-  arp_resolve(layer->iface, dst, macdst);
+
+  int arp = arp_resolve(layer->iface, dst, macdst);  
   //Sacamos la dirección MAC de destino
+  if (arp < 0)
+    {
+        printf("Ha ocurrido un error en el arp_resolve(el destino esta en nuestra subred)\n");
+    }
+    else if (arp == 0)
+    {
+        
+        printf("Enviamos bien el arp");
+    }
   
-  eth_send(layer->iface, macdst, protocol, (unsigned char*)&pkt_ip_send, sizeof(struct ipv4_frame));
   
+  int a = eth_send(layer->iface, macdst, protocol, payload, payload_len);
+  if (a < 0)
+    {
+        printf("Ha ocurrido un error en eth_send\n");
+    }
+    else if (a > 0)
+    {
+        printf("Número de bytes enviados: %d\n", a);
+        printf("Esto es lo que enviamos en str: \n %s", (unsigned char *) &pkt_ip_send);
+    }
+  //No estoy seguro de cómo enviar pkt_ip_send, así solo enviamos el payload
   return 0;
 }
 //Si el destino está fuera de la subred (hay salto), tendremos que sacar la MAC del siguiente salto y enviárselo a él
 else
 {
-  arp_resolve(layer->iface, route->gateway_addr, macdst);
+  int arp = arp_resolve(layer->iface, route->gateway_addr, macdst);
+  if (arp < 0)
+    {
+        printf("Ha ocurrido un error en el arp_resolve(el destino no esta en nuestra subred)\n");
+    }
+    else if (arp == 0)
+    {
+        
+        printf("Enviamos bien el arp");
+    }
   //Sacamos dirección MAC del salto
-  eth_send(layer->iface, macdst, protocol, (unsigned char*)&pkt_ip_send, sizeof(struct ipv4_frame)); 
- 
-  return 0;
-}
-return -1;
-}
-
-/*int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) {
-
-//Metodo para recibir una trama ip
+  int a = eth_send(layer->iface, macdst, protocol, (unsigned char*)&pkt_ip_send, payload_len+20); 
+  if (a < 0)
+    {
+        printf("Ha ocurrido un error\n");
+        return -1;
+    }
+    else if (a > 0)
+    {
+        printf("Número de bytes enviados: %d\n", a);
+        printf("Esto es lo que enviamos en str: \n %s", (unsigned char *) &pkt_ip_send);
+        return 0;
+    }
+ return 0;
   
 }
-QUITAD COMENTARIO CUANDO VAYAIS A EDITAR
-*/
+}
+
+int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) 
+{
+
+//Metodo para recibir una trama ip
+struct ipv4_frame pkt_ip_recv;
+
+/* Inicializar temporizador para mantener timeout si se reciben tramas con tipo incorrecto. */
+  timerms_t timer;
+  timerms_reset(&timer, timeout);
+  // OBTENER MAC E IP PROPIA
+    mac_addr_t macPropia;
+    eth_getaddr(layer->iface, macPropia);
+    int isIP;
+    int isProtocol;
+  do {
+    //long int time_left = timerms_left(&timer);
+
+    /* Recibir trama del interfaz Ethernet y procesar errores */
+    int eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, sizeof(struct ipv4_frame), timeout);
+    if (eth == -1)
+        {
+            printf("Ha ocurrido un error\n");
+            return -1;
+        }
+        else
+        {
+            printf("Número de bytes recibidos: %d\n", eth);
+            printf("IPv4 Recibido: ");
+            for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
+                printf("%02x ", ((unsigned char *)&pkt_ip_recv)[i]);
+            }
+            printf("\n");
+        }
+  //Hacemos las comprobaciones necesarias(Que esta bien) para salir del do while
+  
+  isIP = (memcmp(layer->addr,pkt_ip_recv.src_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega 
+  if(pkt_ip_recv.protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
+  {
+     isProtocol= 0;
+  } else 
+  { 
+    isProtocol = 1;
+  }
+
+  }while (!(isIP && isProtocol));
+
+return 0;
+  
+}
+
+
 /* Dirección IPv4 a cero: "0.0.0.0" */
 ipv4_addr_t IPv4_ZERO_ADDR = { 0, 0, 0, 0 };
 
