@@ -126,7 +126,8 @@ else
 {
   arp_resolve(layer->iface, route->gateway_addr, macdst);
   //Sacamos dirección MAC del salto
-  eth_send(layer->iface, macdst, protocol, payload, payload_len);
+  eth_send(layer->iface, macdst, protocol, (unsigned char*)&pkt_ip_send, payload_len); 
+ 
   return 0;
 }
 return -1;
