@@ -1,5 +1,5 @@
 # ipv4_config_client.txt
 #
-Interface wlan0
-IPv4Address 10.118.122.41
+Interface enp0s3
+IPv4Address 10.0.2.15
 SubnetMask 255.255.255.0
