@@ -1,6 +1,5 @@
 
 #include "arp.h"
-#include "eth.h"
 #include <unistd.h>
 #include <libgen.h>
 #include <string.h>
@@ -10,60 +9,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ipv4_config.h" 
-#include "ipv4_route_table.h"
 #include "arp.h" 
 #include "log.h"
 
-
-
-struct ipv4_layer {
-eth_iface_t * iface;  /*iface=eth_open("eth1"); */
-ipv4_addr_t addr; /* 192.168.1.1 */
-ipv4_addr_t netmask; /* 255.255.255.0 */
-ipv4_route_table_t * routing_table;
-}; 
-
-struct ipv4_frame
-{
-  uint8_t version_headerLen;
-  uint8_t dscp;
-  uint16_t total_length;
-  uint16_t identification;
-  uint16_t flags_fragmentOffset;
-  uint8_t ttl;
-  uint8_t protocol;
-  uint16_t checksum;
-  ipv4_addr_t src_ip;
-  ipv4_addr_t dst_ip;
-  unsigned char * payload;
-};
 
 ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
   
     ipv4_layer_t * layer = malloc(sizeof(ipv4_layer_t));
     
     char ifname[16];
-    ipv4_addr_t addr;
-    ipv4_addr_t netmask;
-    ipv4_config_read( file_conf, ifname , addr,netmask);
+    //Leemos el archivo de configuracion y de ahi sacamos la interfaz, la IP y la mascara
+    ipv4_config_read( file_conf, ifname , layer->addr,layer->netmask);
+    //Imprimimos lo que sale de la funcion config_read
     log_trace("Estamos usando la interfaz: %s",ifname);
-    /* 2. Leer direcciones y subred de file_conf */
-
-    memcpy(layer->addr, addr, IPv4_ADDR_SIZE);
-    memcpy(layer->netmask, netmask, IPv4_ADDR_SIZE);
-
-
-    //ipv4_route_table_t * routing_table;
+    char ip_str[IPv4_STR_MAX_LENGTH]; 
+    ipv4_addr_str(layer->addr,ip_str);
+    log_trace("Estamos con la IP: %s",ip_str);
+    char netmask_str[IPv4_STR_MAX_LENGTH]; 
+    ipv4_addr_str(layer->netmask,netmask_str);
+    log_trace("Estamos con la Mascara: %s",netmask_str);
+    
     layer->routing_table=ipv4_route_table_create(); //HAY QUE LIBERAR!!!!!!!! ipv4_route_table_free()
 
-    int numRutasLeidas = ipv4_route_table_read(file_conf_route, layer->routing_table);/* 3. Leer tabla de reenvío IP de file_conf_route */
+    int numRutasLeidas = ipv4_route_table_read(file_conf_route, layer->routing_table);/* Leer tabla de reenvío IP de file_conf_route */
     if(numRutasLeidas == 0){
       log_trace("No se ha leido ninguna ruta");
     }else if(numRutasLeidas ==-1){
       log_trace("Se ha producido algún error al leer el fichero de rutas.");
     }
-
-    //memcpy(layer->routing_table, routing_table, sizeof(ipv4_route_table_t *));
 
     
     layer->iface=eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
@@ -71,15 +44,15 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
 
 }
 
+
 int ipv4_close (ipv4_layer_t * layer) {
-
-/* 1. Liberar table de rutas (layer -> routing_table) */
-  ipv4_route_table_free(layer->routing_table);
-/* 2. Cerrar capa Ethernet con eth_close() */
-  eth_close ( layer->iface );
-
-free(layer);
-return 0;
+  // 1. Liberar table de rutas (layer -> routing_table)
+    ipv4_route_table_free(layer->routing_table);
+  // 2. Cerrar capa Ethernet con eth_close() 
+    eth_close ( layer->iface );
+  //Liberar la memoria reservada en el open para el layer
+    free(layer);
+  return 0;
 }
 
 
@@ -94,15 +67,15 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   
   //INICIALIZAMOS LA ESTRUCTURA
   pkt_ip_send.version_headerLen = VERSION_HEADERLEN;
-  pkt_ip_send.total_length = HEADER_LEN_IP+payload_len;
-  pkt_ip_send.identification = 0x2816;
+  pkt_ip_send.total_length = htons(HEADER_LEN_IP+payload_len);
+  pkt_ip_send.identification = htons(0x2816);
   pkt_ip_send.flags_fragmentOffset = FLAGS_FO; 
   pkt_ip_send.ttl = 64; //Hay que ver que numero ponemos de ttl(Puede que sea 64)
   pkt_ip_send.protocol = protocol;
   pkt_ip_send.checksum = ipv4_checksum((unsigned char*) &pkt_ip_send,HEADER_LEN_IP);
   memcpy(pkt_ip_send.src_ip, layer->addr, IPv4_ADDR_SIZE);
   memcpy(pkt_ip_send.dst_ip, dst, IPv4_ADDR_SIZE);
-  pkt_ip_send.payload=payload;//Ahora hacemos el lookup 
+  memcpy(pkt_ip_send.payload, payload, payload_len);
   
   ipv4_route_t* route;
   route = ipv4_route_table_lookup(layer->routing_table, dst);
@@ -127,7 +100,7 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
       }
     
     
-    int a = eth_send(layer->iface, macdst, protocol, payload, payload_len);
+    int a = eth_send(layer->iface, macdst, protocol,(unsigned char*)&pkt_ip_send, pkt_ip_send.total_length);
     if (a < 0)
       {
           log_trace("Ha ocurrido un error en eth_send\n");
@@ -135,10 +108,10 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
       else if (a > 0)
       {
           log_trace("Número de bytes enviados: %d\n", a);
-          log_trace("Esto es lo que enviamos en str: \n %s", (unsigned char *) &pkt_ip_send);
+          log_trace("Esto es lo que enviamos en str del IP: \n %s", (unsigned char *) &pkt_ip_send);
       }
-    //No estoy seguro de cómo enviar pkt_ip_send, así solo enviamos el payload
-    return 0;
+   
+    return (a-HEADER_LEN_IP);
   }
   //Si el destino está fuera de la subred (hay salto), tendremos que sacar la MAC del siguiente salto y enviárselo a él
   else
@@ -147,6 +120,7 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
     if (arp < 0)
       {
           log_trace("Ha ocurrido un error en el arp_resolve(el destino no esta en nuestra subred)");
+          return -1;
       }
       else if (arp == 0)
       {
@@ -154,19 +128,18 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
           log_trace("Enviamos bien el arp");
       }
     //Sacamos dirección MAC del salto
-    int a = eth_send(layer->iface, macdst, protocol, (unsigned char*)&pkt_ip_send, payload_len+HEADER_LEN_IP); 
+    int a = eth_send(layer->iface, macdst, protocol, (unsigned char*)&pkt_ip_send, pkt_ip_send.total_length); 
     if (a < 0)
       {
           log_trace("Ha ocurrido un error");
           return -1;
       }
-      else if (a > 0)
+      else if (a >= 0)
       {
           log_trace("Número de bytes enviados: %d", a);
-          log_trace("Esto es lo que enviamos en str: ç%s", (unsigned char *) &pkt_ip_send);
-          return 0;
+          log_trace("Esto es lo que enviamos en str del IP: %s", (unsigned char *) &pkt_ip_send);
       }
-   return 0;
+return (a-HEADER_LEN_IP);
     
   }
 }
@@ -175,7 +148,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ip
 {
 
 //Metodo para recibir una trama ip
-struct ipv4_frame pkt_ip_recv;
+struct ipv4_frame* pkt_ip_recv;
 
 /* Inicializar temporizador para mantener timeout si se reciben tramas con tipo incorrecto. */
   timerms_t timer;
@@ -186,10 +159,10 @@ struct ipv4_frame pkt_ip_recv;
     int isIP;
     int isProtocol;
   do {
-    //long int time_left = timerms_left(&timer);
+    long int time_left = timerms_left(&timer);
 
     /* Recibir trama del interfaz Ethernet y procesar errores */
-    int eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, sizeof(struct ipv4_frame), timeout);
+    int eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, sizeof(struct ipv4_frame), time_left);
     if (eth == -1)
         {
             log_trace("Ha ocurrido un error");
@@ -197,6 +170,7 @@ struct ipv4_frame pkt_ip_recv;
         }
         else
         {
+            pkt_ip_recv = (ipv4_frame_t*)buffer;
             log_trace("Número de bytes recibidos: %d", eth);
             log_trace("IPv4 Recibido: ");
             for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
@@ -205,16 +179,18 @@ struct ipv4_frame pkt_ip_recv;
         }
   //Hacemos las comprobaciones necesarias(Que esta bien) para salir del do while
   
-  isIP = (memcmp(layer->addr,pkt_ip_recv.src_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
-  if(pkt_ip_recv.protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
+  isIP = (memcmp(layer->addr,pkt_ip_recv->dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
+  if(pkt_ip_recv->protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
   {
-     isProtocol= 0;
+     isProtocol= 1;
   } else 
   { 
-    isProtocol = 1;
+    isProtocol = 0;
   }
 
   }while (!(isIP && isProtocol));
+
+  //Y ahora que???
 
 return 0;
   
@@ -321,5 +297,4 @@ uint16_t ipv4_checksum ( unsigned char * data, int len )
 
   return (uint16_t) sum;
 }
-
 
