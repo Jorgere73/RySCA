@@ -1,12 +1,12 @@
-#include "arp.h"
-#include "eth.h"
-#include "ipv4.h"
-#include "log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <libgen.h>
+#include "eth.h"
+#include "ipv4.h"
+#include "arp.h"
+#include "log.h"
 
 
 #define DEFAULT_PAYLOAD_LEN 200
@@ -41,7 +41,9 @@ int main(int argc, char* argv[]){
     if(layer ==NULL){
         fprintf(stderr, "ERROR en ipv4_open()");
     }
-    
+    char * a;
+    ipv4_addr_str(layer->addr, a);
+    log_trace("----------------------%s", a);
     ipv4_addr_t dst;
     memset(&dst, 0, sizeof(ipv4_addr_t));
     ipv4_str_addr(argv[1], dst);

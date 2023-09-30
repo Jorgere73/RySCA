@@ -1,9 +1,10 @@
-#include "ipv4_route_table.h"
-#include "log.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include "ipv4_route_table.h"
+#include "log.h"
+
 
 #define IPV4_SUBNET_MAX_LENGTH 30
 
@@ -119,12 +120,12 @@ int ipv4_route_lookup ( ipv4_route_t * route, ipv4_addr_t addr )
       case 0:
       prefix_length=prefix_length+0;
       break;    
-
     }
-    }
+  }
   log_trace("Prefijo de la red: %d", prefix_length);
 
-  }else{
+  } else
+  {
     return -1;
   }
   return prefix_length;

@@ -1,7 +1,6 @@
 #include "arp.h"
 #include "eth.h"
 #include "log.h"
-#include "ipv4.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
