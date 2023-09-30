@@ -1,6 +1,7 @@
 #ifndef _IPv4_ROUTE_TABLE_H
 #define _IPv4_ROUTE_TABLE_H
 
+#include "header.h"
 #include "ipv4.h"
 
 #include <stdio.h>
@@ -17,12 +18,12 @@
  * encaminamiento sea necesario añadir más campos a esta estructura, así como
  * modificar las funciones asociadas. ipv4_addr_t subnet_addr; ipv4_addr_t subnet_mask; char iface[IFACE_NAME_MAX_LENGTH]; ipv4_addr_t gateway_addr;
  */
-typedef struct ipv4_route {//es una fila de la tabla
+struct ipv4_route {//es una fila de la tabla
   ipv4_addr_t subnet_addr;
   ipv4_addr_t subnet_mask;
   char iface[IFACE_NAME_MAX_LENGTH];
   ipv4_addr_t gateway_addr;
-} ipv4_route_t;
+};
 
 
 /* ipv4_route_t * ipv4_route_create
@@ -134,7 +135,7 @@ void ipv4_route_free ( ipv4_route_t * route );
  * respectivamente, leer/escribir la tabla de rutas de/a un fichero, e
  * imprimirla por la salida estándar.
  */
-typedef struct ipv4_route_table ipv4_route_table_t;
+//typedef struct ipv4_route_table ipv4_route_table_t;
 
 
 /* ipv4_route_table_t * ipv4_route_table_create();
