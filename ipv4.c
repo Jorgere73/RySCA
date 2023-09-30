@@ -130,7 +130,7 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
           log_trace("Enviamos bien el arp");
       }
     //Sacamos dirección MAC del salto
-    int a = eth_send(layer->iface, macdst, TYPE_IP, (unsigned char*)pkt_ip_send, pkt_ip_send->total_length); 
+    int a = eth_send(layer->iface, macdst, TYPE_IP, (unsigned char*)pkt_ip_send, HEADER_LEN_IP+payload_len); 
     free(pkt_ip_send);
     if (a < 0)
       {
