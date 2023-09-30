@@ -38,6 +38,7 @@ int main(int argc, char* argv[]){
     }
     ipv4_layer_t* layer;
     layer = ipv4_open("ipv4_config_client.txt","ipv4_route_table_client.txt"); //Esto se puede psaasar por parametro
+    
     if(layer ==NULL){
         fprintf(stderr, "ERROR en ipv4_open()");
     }
@@ -49,7 +50,9 @@ int main(int argc, char* argv[]){
     ipv4_str_addr(argv[1], dst);
     uint8_t protocol = atoi(argv[2]);
     
-    
+    char* a = 0;
+    ipv4_addr_str(layer->netmask, a);
+    log_trace(a);
 
     /* Generar payload */
     unsigned char payload[DEFAULT_PAYLOAD_LEN];
@@ -60,6 +63,13 @@ int main(int argc, char* argv[]){
 
     log_trace("Enviando %d bytes al Servidor IP:", DEFAULT_PAYLOAD_LEN);
     print_pkt(payload, DEFAULT_PAYLOAD_LEN, 0);
+    ipv4_addr_str(layer->netmask, a);
+    log_trace(a);
+
+    //int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int DEFAULT_PAYLOAD_LEN)
+    int err = ipv4_send(layer,dst,protocol, payload, DEFAULT_PAYLOAD_LEN); 
+    if (err == -1) {
+        log_trace("ERROR en ipv4_seLT_PAYLOAD_LEN", 0);
 
     //int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int DEFAULT_PAYLOAD_LEN)
     int err = ipv4_send(layer,dst,protocol, payload, DEFAULT_PAYLOAD_LEN); 
@@ -67,7 +77,7 @@ int main(int argc, char* argv[]){
         log_trace("ERROR en ipv4_send()");
         exit(-1);
     }   
-//int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout)
+    //int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout)
     unsigned char buffer[IP_MTU]; //
     ipv4_addr_t sender;
     long int timeout = 2000;
@@ -88,7 +98,5 @@ int main(int argc, char* argv[]){
 
     ipv4_close(layer);
     return 0;
-    
-    
-    
+    }
 }

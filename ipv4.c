@@ -1,6 +1,5 @@
 
 #include "arp.h"
-#include "eth.h"
 #include <unistd.h>
 #include <libgen.h>
 #include <string.h>
@@ -10,11 +9,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "ipv4_config.h" 
-#include "ipv4_route_table.h"
 #include "arp.h" 
 #include "log.h"
 
 
+<<<<<<< HEAD
 
 struct ipv4_layer {
 eth_iface_t * iface;  /*iface=eth_open("eth1"); */
@@ -38,6 +37,8 @@ typedef struct ipv4_frame
   unsigned char * payload;
 }ipv4_frame_t;
 
+=======
+>>>>>>> imports
 ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
   
     ipv4_layer_t * layer = malloc(sizeof(ipv4_layer_t));
@@ -162,7 +163,11 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
       else if (a >= 0)
       {
           log_trace("Número de bytes enviados: %d", a);
+<<<<<<< HEAD
           log_trace("Esto es lo que enviamos en str del IP: ç%s", (unsigned char *) &pkt_ip_send);
+=======
+          log_trace("Esto es lo que enviamos en str del IP: %s", (unsigned char *) &pkt_ip_send);
+>>>>>>> imports
       }
 return (a-HEADER_LEN_IP);
     
@@ -173,7 +178,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ip
 {
 
 //Metodo para recibir una trama ip
-struct ipv4_frame pkt_ip_recv;
+struct ipv4_frame* pkt_ip_recv;
 
 /* Inicializar temporizador para mantener timeout si se reciben tramas con tipo incorrecto. */
   timerms_t timer;
@@ -195,7 +200,11 @@ struct ipv4_frame pkt_ip_recv;
         }
         else
         {
+<<<<<<< HEAD
             pkt_ip_recv = (struct ip_frame)buffer;
+=======
+            pkt_ip_recv = (ipv4_frame_t*)buffer;
+>>>>>>> imports
             log_trace("Número de bytes recibidos: %d", eth);
             log_trace("IPv4 Recibido: ");
             for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
@@ -204,8 +213,13 @@ struct ipv4_frame pkt_ip_recv;
         }
   //Hacemos las comprobaciones necesarias(Que esta bien) para salir del do while
   
+<<<<<<< HEAD
   isIP = (memcmp(layer->addr,pkt_ip_recv.dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
   if(pkt_ip_recv.protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
+=======
+  isIP = (memcmp(layer->addr,pkt_ip_recv->dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
+  if(pkt_ip_recv->protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
+>>>>>>> imports
   {
      isProtocol= 1;
   } else 
