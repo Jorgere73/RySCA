@@ -39,7 +39,7 @@ struct arp_frame
     ipv4_addr_t dest_ip;
 };
 
-int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
+int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t* mac_addr)
 {
     struct arp_frame arp;
     memset(&arp, 0, sizeof(struct arp_frame ));
@@ -58,7 +58,7 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
     char ip_str[IPv4_STR_MAX_LENGTH];
     ipv4_addr_str(ip_addr, ip_str);
     log_trace("IP: %s", ip_str);
-    memcpy(arp.dest_addr, mac_addr, MAC_ADDR_SIZE);
+    memcpy(arp.dest_addr, *mac_addr, MAC_ADDR_SIZE);
     memcpy(arp.dest_ip, ip_addr, IPv4_ADDR_SIZE);
     memcpy(arp.src_addr, macPropia, MAC_ADDR_SIZE);
     //memcpy(arp.src_ip, ipPropia, IPv4_ADDR_SIZE);
@@ -126,7 +126,8 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t mac_addr)
     }while(!(isIP && isReply)); 
 
     
-    mac_addr = arp_reply.src_addr;
+    //mac_addr = arp_reply.src_addr;
+    memcpy(mac_addr, arp_reply.src_addr, sizeof(mac_addr_t));
 
     char mac_received_str[MAC_STR_LENGTH];
     mac_addr_str(arp_reply.src_addr, mac_received_str);

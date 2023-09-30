@@ -42,7 +42,6 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
 
     layer->iface=eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
     return layer;
-
 }
 
 
@@ -88,7 +87,10 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   if(memcmp(route->gateway_addr, IPv4_ZERO_ADDR, IPv4_ADDR_SIZE)==0)
   {
     printf("%s", eth_getname(layer->iface));
-    int arp = arp_resolve(layer->iface, dst, macdst);  
+    int arp = arp_resolve(layer->iface, dst, &macdst);
+    char* vc = 0;
+    mac_addr_str(macdst, vc);
+    log_trace("-------------%s", vc);  
     //Sacamos la dirección MAC de destino
     if (arp < 0)
       {
@@ -99,7 +101,7 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
           
           log_trace("Enviamos bien el arp");
       }
-    int a = eth_send(layer->iface, macdst, protocol,(unsigned char*)pkt_ip_send, HEADER_LEN_IP+payload_len);
+    int a = eth_send(layer->iface, macdst, TYPE_IP,(unsigned char*)pkt_ip_send, HEADER_LEN_IP+payload_len);
     free(pkt_ip_send);
     if (a < 0)
       {
@@ -115,7 +117,8 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   //Si el destino está fuera de la subred (hay salto), tendremos que sacar la MAC del siguiente salto y enviárselo a él
   else
   {
-    int arp = arp_resolve(layer->iface, route->gateway_addr, macdst);
+    int arp = arp_resolve(layer->iface, route->gateway_addr, &macdst);
+    
     if (arp < 0)
       {
           log_trace("Ha ocurrido un error con arp");
@@ -127,7 +130,7 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
           log_trace("Enviamos bien el arp");
       }
     //Sacamos dirección MAC del salto
-    int a = eth_send(layer->iface, macdst, protocol, (unsigned char*)pkt_ip_send, pkt_ip_send->total_length); 
+    int a = eth_send(layer->iface, macdst, TYPE_IP, (unsigned char*)pkt_ip_send, pkt_ip_send->total_length); 
     free(pkt_ip_send);
     if (a < 0)
       {

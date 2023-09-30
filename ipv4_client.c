@@ -43,6 +43,7 @@ int main(int argc, char* argv[]){
     //memset(&dst, 0, sizeof(ipv4_addr_t));
     ipv4_str_addr(argv[1], dst);
     uint8_t protocol = atoi(argv[2]);
+    log_trace("protocol: %d", protocol);
 
     ipv4_layer_t* layer = ipv4_open("ipv4_config_client.txt","ipv4_route_table_client.txt"); //Esto se puede psaasar por parametro
     
