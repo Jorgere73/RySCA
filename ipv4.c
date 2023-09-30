@@ -15,32 +15,34 @@
 
 ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
   
-    ipv4_layer_t * layer = malloc(sizeof(ipv4_layer_t));
+    ipv4_layer_t layer;
+    ipv4_layer_t* layerp;
     
     char ifname[16];
     //Leemos el archivo de configuracion y de ahi sacamos la interfaz, la IP y la mascara
-    ipv4_config_read( file_conf, ifname , layer->addr,layer->netmask);
+    ipv4_config_read( file_conf, ifname , layer.addr,layer.netmask);
     //Imprimimos lo que sale de la funcion config_read
     log_trace("Estamos usando la interfaz: %s",ifname);
     char ip_str[IPv4_STR_MAX_LENGTH]; 
-    ipv4_addr_str(layer->addr,ip_str);
+    ipv4_addr_str(layer.addr,ip_str);
     log_trace("Estamos con la IP: %s",ip_str);
     char netmask_str[IPv4_STR_MAX_LENGTH]; 
-    ipv4_addr_str(layer->netmask,netmask_str);
+    ipv4_addr_str(layer.netmask,netmask_str);
     log_trace("Estamos con la Mascara: %s",netmask_str);
     
-    layer->routing_table=ipv4_route_table_create(); //HAY QUE LIBERAR!!!!!!!! ipv4_route_table_free()
+    layer.routing_table=ipv4_route_table_create(); //HAY QUE LIBERAR!!!!!!!! ipv4_route_table_free()
 
-    int numRutasLeidas = ipv4_route_table_read(file_conf_route, layer->routing_table);/* Leer tabla de reenvío IP de file_conf_route */
+    int numRutasLeidas = ipv4_route_table_read(file_conf_route, layer.routing_table);/* Leer tabla de reenvío IP de file_conf_route */
+    log_trace("Se han leído %d rutas", numRutasLeidas);
     if(numRutasLeidas == 0){
       log_trace("No se ha leido ninguna ruta");
     }else if(numRutasLeidas ==-1){
       log_trace("Se ha producido algún error al leer el fichero de rutas.");
     }
 
-    
-    layer->iface=eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
-    return layer;
+    layer.iface=eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
+    layerp = &layer;
+    return layerp;
 
 }
 
@@ -57,7 +59,6 @@ int ipv4_close (ipv4_layer_t * layer) {
 
 
 int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len) {
-
   //Metodo para enviar una trama ip
   struct ipv4_frame pkt_ip_send;
   mac_addr_t macdst;
@@ -67,6 +68,7 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   
   //INICIALIZAMOS LA ESTRUCTURA
   pkt_ip_send.version_headerLen = VERSION_HEADERLEN;
+  ipv4_route_table_print(layer->routing_table);
   pkt_ip_send.total_length = htons(HEADER_LEN_IP+payload_len);
   pkt_ip_send.identification = htons(0x2816);
   pkt_ip_send.flags_fragmentOffset = FLAGS_FO; 
@@ -77,13 +79,18 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   memcpy(pkt_ip_send.dst_ip, dst, IPv4_ADDR_SIZE);
   memcpy(pkt_ip_send.payload, payload, payload_len);
   
+  layer = ipv4_open("ipv4_config_client.txt","ipv4_route_table_client.txt"); 
   ipv4_route_t* route;
   route = ipv4_route_table_lookup(layer->routing_table, dst);
+  ipv4_route_print(route);
   
   //route es la ruta más rápida encontrada en la tabla de rutas del layer hasta la dirección dst.
   //De no funcionar, devuelve -1
   
   //Si el destino se encuentra en la misma subred que nuestro host, encontramos su MAC y enviamos
+  char b[4];
+  ipv4_addr_str(route->gateway_addr, b);
+  log_trace("%s", *b);
   if(memcmp(route->gateway_addr, IPv4_ZERO_ADDR, IPv4_ADDR_SIZE)==0)
   {
     printf("%s", eth_getname(layer->iface));
@@ -144,13 +151,13 @@ return (a-HEADER_LEN_IP);
   }
 }
 
-int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) 
+/*int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) 
 {
 
 //Metodo para recibir una trama ip
 struct ipv4_frame* pkt_ip_recv;
 
-/* Inicializar temporizador para mantener timeout si se reciben tramas con tipo incorrecto. */
+// Inicializar temporizador para mantener timeout si se reciben tramas con tipo incorrecto.
   timerms_t timer;
   timerms_reset(&timer, timeout);
   // OBTENER MAC E IP PROPIA
@@ -161,7 +168,7 @@ struct ipv4_frame* pkt_ip_recv;
   do {
     long int time_left = timerms_left(&timer);
 
-    /* Recibir trama del interfaz Ethernet y procesar errores */
+    // Recibir trama del interfaz Ethernet y procesar errores 
     int eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, sizeof(struct ipv4_frame), time_left);
     if (eth == -1)
         {
@@ -195,7 +202,7 @@ struct ipv4_frame* pkt_ip_recv;
 return 0;
   
 }
-
+*/
 
 /* Dirección IPv4 a cero: "0.0.0.0" */
 ipv4_addr_t IPv4_ZERO_ADDR = { 0, 0, 0, 0 };

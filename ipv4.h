@@ -17,8 +17,7 @@
 //la máscara de red(ipv4_addr_t netmask), y su tabla de enrutamiento (ipv4_route_table_t * routing_table)
 typedef unsigned char ipv4_addr_t [IPv4_ADDR_SIZE];
 typedef struct ipv4_layer ipv4_layer_t;
-struct ipv4_frame ipv4_frame_t;
-typedef unsigned char ipv4_addr_t [IPv4_ADDR_SIZE];
+typedef struct ipv4_frame ipv4_frame_t;
 
 struct ipv4_layer {
 eth_iface_t * iface;  /*iface=eth_open("eth1"); */
@@ -39,7 +38,7 @@ struct ipv4_frame
   uint16_t checksum;
   ipv4_addr_t src_ip;
   ipv4_addr_t dst_ip;
-  unsigned char * payload;
+  unsigned char payload[200];
 };
 
 

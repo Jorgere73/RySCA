@@ -80,7 +80,6 @@ int ipv4_route_lookup ( ipv4_route_t * route, ipv4_addr_t addr )
 {
   int prefix_length = 0;
 
-
   // tmp = route->subnet_mask AND addr
   // CMP tmp, route->subnet_addr
   // tmp[0] = route->subnet_mask[0] & addr[0];
@@ -438,13 +437,15 @@ ipv4_route_t * ipv4_route_table_remove ( ipv4_route_table_t * table, int index )
 ipv4_route_t * ipv4_route_table_lookup ( ipv4_route_table_t * table, 
                                          ipv4_addr_t addr )
 {
+  //ipv4_route_table_print(table);
   ipv4_route_t * best_route = NULL;
   int best_route_prefix = -1;
-
   if (table != NULL) {
     int i;
     for (i=0; i<IPv4_ROUTE_TABLE_SIZE; i++) {
-      ipv4_route_t * route_i = table->routes[i];
+      //ipv4_route_t * route_i = table->routes[i];
+      //ipv4_route_table_print(table);
+      ipv4_route_t * route_i = ipv4_route_table_get(table, i);
       if (route_i != NULL) {
         int route_i_lookup = ipv4_route_lookup(route_i, addr);
         if (route_i_lookup > best_route_prefix) {
