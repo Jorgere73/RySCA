@@ -19,6 +19,7 @@ typedef unsigned char ipv4_addr_t [IPv4_ADDR_SIZE];
 typedef struct ipv4_layer ipv4_layer_t;
 typedef struct ipv4_route ipv4_route_t;
 typedef struct ipv4_route_table ipv4_route_table_t;
+typedef struct ipv4_frame ipv4_frame;
 
 
 struct ipv4_route {//es una fila de la tabla

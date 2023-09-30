@@ -16,24 +16,23 @@
 
 ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
   
-    ipv4_layer_t layer;
-    ipv4_layer_t* layerp;
+    ipv4_layer_t* layer = (ipv4_layer_t*)calloc(1, sizeof(ipv4_layer_t));
     
     char ifname[16];
     //Leemos el archivo de configuracion y de ahi sacamos la interfaz, la IP y la mascara
-    ipv4_config_read( file_conf, ifname , layer.addr,layer.netmask);
+    ipv4_config_read( file_conf, ifname , layer->addr,layer->netmask);
     //Imprimimos lo que sale de la funcion config_read
     log_trace("Estamos usando la interfaz: %s",ifname);
     char ip_str[IPv4_STR_MAX_LENGTH]; 
-    ipv4_addr_str(layer.addr,ip_str);
+    ipv4_addr_str(layer->addr,ip_str);
     log_trace("Estamos con la IP: %s",ip_str);
     char netmask_str[IPv4_STR_MAX_LENGTH]; 
-    ipv4_addr_str(layer.netmask,netmask_str);
+    ipv4_addr_str(layer->netmask,netmask_str);
     log_trace("Estamos con la Mascara: %s",netmask_str);
     
-    layer.routing_table=ipv4_route_table_create(); //HAY QUE LIBERAR!!!!!!!! ipv4_route_table_free()
+    layer->routing_table=ipv4_route_table_create(); //HAY QUE LIBERAR!!!!!!!! ipv4_route_table_free()
 
-    int numRutasLeidas = ipv4_route_table_read(file_conf_route, layer.routing_table);/* Leer tabla de reenvío IP de file_conf_route */
+    int numRutasLeidas = ipv4_route_table_read(file_conf_route, layer->routing_table);/* Leer tabla de reenvío IP de file_conf_route */
     log_trace("Se han leído %d rutas", numRutasLeidas);
     if(numRutasLeidas == 0){
       log_trace("No se ha leido ninguna ruta");
@@ -41,9 +40,8 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
       log_trace("Se ha producido algún error al leer el fichero de rutas.");
     }
 
-    layer.iface=eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
-    layerp = &layer;
-    return layerp;
+    layer->iface=eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
+    return layer;
 
 }
 
@@ -55,32 +53,30 @@ int ipv4_close (ipv4_layer_t * layer) {
     eth_close ( layer->iface );
   //Liberar la memoria reservada en el open para el layer
     free(layer);
-  return 0;
+    return 0;
 }
 
 
 int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len) {
   //Metodo para enviar una trama ip
-  struct ipv4_frame pkt_ip_send;
+  ipv4_frame* pkt_ip_send = calloc(1, sizeof(ipv4_frame));
   mac_addr_t macdst;
   memset(&macdst, 0, sizeof(mac_addr_t));
   //Variable donde guardaremos la MAC de destino
-  memset(&pkt_ip_send, 0, sizeof(struct ipv4_frame)); //Limpiamos la estructura para que no haya basura
+  //memset(&pkt_ip_send, 0, sizeof(struct ipv4_frame)); //Limpiamos la estructura para que no haya basura
   
   //INICIALIZAMOS LA ESTRUCTURA
-  pkt_ip_send.version_headerLen = VERSION_HEADERLEN;
-  ipv4_route_table_print(layer->routing_table);
-  pkt_ip_send.total_length = htons(HEADER_LEN_IP+payload_len);
-  pkt_ip_send.identification = htons(0x2816);
-  pkt_ip_send.flags_fragmentOffset = FLAGS_FO; 
-  pkt_ip_send.ttl = 64; //Hay que ver que numero ponemos de ttl(Puede que sea 64)
-  pkt_ip_send.protocol = protocol;
-  pkt_ip_send.checksum = ipv4_checksum((unsigned char*) &pkt_ip_send,HEADER_LEN_IP);
-  memcpy(pkt_ip_send.src_ip, layer->addr, IPv4_ADDR_SIZE);
-  memcpy(pkt_ip_send.dst_ip, dst, IPv4_ADDR_SIZE);
-  memcpy(pkt_ip_send.payload, payload, payload_len);
-  
-  layer = ipv4_open("ipv4_config_client.txt","ipv4_route_table_client.txt"); 
+  pkt_ip_send->version_headerLen = VERSION_HEADERLEN;
+  //ipv4_route_table_print(layer->routing_table);
+  pkt_ip_send->total_length = htons(HEADER_LEN_IP+payload_len);
+  pkt_ip_send->identification = htons(0x2816);
+  pkt_ip_send->flags_fragmentOffset = FLAGS_FO; 
+  pkt_ip_send->ttl = 64; //Hay que ver que numero ponemos de ttl(Puede que sea 64)
+  pkt_ip_send->protocol = protocol;
+  pkt_ip_send->checksum = ipv4_checksum((unsigned char*) pkt_ip_send,HEADER_LEN_IP);
+  memcpy(pkt_ip_send->src_ip, layer->addr, IPv4_ADDR_SIZE);
+  memcpy(pkt_ip_send->dst_ip, dst, IPv4_ADDR_SIZE);
+  memcpy(pkt_ip_send->payload, payload, payload_len);
   ipv4_route_t* route;
   route = ipv4_route_table_lookup(layer->routing_table, dst);
   //ipv4_route_print(route);
@@ -89,13 +85,6 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   //De no funcionar, devuelve -1
   
   //Si el destino se encuentra en la misma subred que nuestro host, encontramos su MAC y enviamos
-  char b[IPv4_STR_MAX_LENGTH];
-  ipv4_addr_str(route->gateway_addr, b);
-  log_trace("a");
-  log_trace("%d", *b);
-  int g = atoi((char*)route->gateway_addr);
-  log_trace("%d", g);
-  
   if(memcmp(route->gateway_addr, IPv4_ZERO_ADDR, IPv4_ADDR_SIZE)==0)
   {
     printf("%s", eth_getname(layer->iface));
@@ -110,9 +99,8 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
           
           log_trace("Enviamos bien el arp");
       }
-    
-    
-    int a = eth_send(layer->iface, macdst, protocol,(unsigned char*)&pkt_ip_send, pkt_ip_send.total_length);
+    int a = eth_send(layer->iface, macdst, protocol,(unsigned char*)pkt_ip_send, HEADER_LEN_IP+payload_len);
+    free(pkt_ip_send);
     if (a < 0)
       {
           log_trace("Ha ocurrido un error en eth_send\n");
@@ -122,7 +110,6 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
           log_trace("Número de bytes enviados: %d\n", a);
           log_trace("Esto es lo que enviamos en str del IP: \n %s", (unsigned char *) &pkt_ip_send);
       }
-   
     return (a-HEADER_LEN_IP);
   }
   //Si el destino está fuera de la subred (hay salto), tendremos que sacar la MAC del siguiente salto y enviárselo a él
@@ -131,7 +118,7 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
     int arp = arp_resolve(layer->iface, route->gateway_addr, macdst);
     if (arp < 0)
       {
-          log_trace("Ha ocurrido un error en el arp_resolve(el destino no esta en nuestra subred)");
+          log_trace("Ha ocurrido un error con arp");
           return -1;
       }
       else if (arp == 0)
@@ -140,7 +127,8 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
           log_trace("Enviamos bien el arp");
       }
     //Sacamos dirección MAC del salto
-    int a = eth_send(layer->iface, macdst, protocol, (unsigned char*)&pkt_ip_send, pkt_ip_send.total_length); 
+    int a = eth_send(layer->iface, macdst, protocol, (unsigned char*)pkt_ip_send, pkt_ip_send->total_length); 
+    free(pkt_ip_send);
     if (a < 0)
       {
           log_trace("Ha ocurrido un error");
@@ -151,7 +139,7 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
           log_trace("Número de bytes enviados: %d", a);
           log_trace("Esto es lo que enviamos en str del IP: %s", (unsigned char *) &pkt_ip_send);
       }
-return (a-HEADER_LEN_IP);
+    return (a-HEADER_LEN_IP);
     
   }
 }

@@ -447,7 +447,6 @@ ipv4_route_t * ipv4_route_table_lookup ( ipv4_route_table_t * table,
       route_i = table->routes[i];
       //ipv4_route_table_print(table);
       //ipv4_route_t * route_i = ipv4_route_table_get(table, i);
-  ipv4_route_print(route_i);
       if (route_i != NULL) {
         int route_i_lookup = ipv4_route_lookup(route_i, addr);
         if (route_i_lookup > best_route_prefix) {

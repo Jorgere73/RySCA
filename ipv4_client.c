@@ -56,8 +56,7 @@ int main(int argc, char* argv[]){
 
 
     /* Generar payload */
-    unsigned char payload[DEFAULT_PAYLOAD_LEN];
-    memset(&payload, 0, DEFAULT_PAYLOAD_LEN);
+    unsigned char* payload = (unsigned char*) calloc(1, DEFAULT_PAYLOAD_LEN+200);
     int i;
     for (i=0; i<DEFAULT_PAYLOAD_LEN; i++) {
         payload[i] = (unsigned char) i;
@@ -69,7 +68,8 @@ int main(int argc, char* argv[]){
     //ipv4_route_table_print(layer->routing_table);
     
 //Falla que cuando entra en ipv4_send cambia el valor de las rutas
-    int err = ipv4_send(layer,dst,protocol, payload, DEFAULT_PAYLOAD_LEN); 
+    int err = ipv4_send(layer,dst,protocol, payload, DEFAULT_PAYLOAD_LEN);
+    free(payload); 
     if (err == -1) {
         log_trace("ERROR en ipv4_send()");
         exit(-1);
