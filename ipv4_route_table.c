@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include "header.c"
+#include "header.h"
 #include "ipv4_route_table.h"
 #include "log.h"
 
@@ -299,9 +301,7 @@ int ipv4_route_output ( ipv4_route_t * route, int header, FILE * out )
 
 
 
-struct ipv4_route_table {
-  ipv4_route_t * routes[IPv4_ROUTE_TABLE_SIZE];
-};
+
 
 /* ipv4_route_table_t * ipv4_route_table_create();
  * 
@@ -437,15 +437,17 @@ ipv4_route_t * ipv4_route_table_remove ( ipv4_route_table_t * table, int index )
 ipv4_route_t * ipv4_route_table_lookup ( ipv4_route_table_t * table, 
                                          ipv4_addr_t addr )
 {
-  //ipv4_route_table_print(table);
   ipv4_route_t * best_route = NULL;
+  ipv4_route_t * route_i;
+  //ipv4_route_table_print(table);
   int best_route_prefix = -1;
   if (table != NULL) {
-    int i;
-    for (i=0; i<IPv4_ROUTE_TABLE_SIZE; i++) {
-      //ipv4_route_t * route_i = table->routes[i];
+    for (int i=0; i<IPv4_ROUTE_TABLE_SIZE; i++) {
+      ipv4_route_print(table->routes[i]);
+      route_i = table->routes[i];
       //ipv4_route_table_print(table);
-      ipv4_route_t * route_i = ipv4_route_table_get(table, i);
+      //ipv4_route_t * route_i = ipv4_route_table_get(table, i);
+  ipv4_route_print(route_i);
       if (route_i != NULL) {
         int route_i_lookup = ipv4_route_lookup(route_i, addr);
         if (route_i_lookup > best_route_prefix) {
@@ -455,7 +457,6 @@ ipv4_route_t * ipv4_route_table_lookup ( ipv4_route_table_t * table,
       }
     }
   }
-  
   return best_route;
 }
 

@@ -18,12 +18,7 @@
  * encaminamiento sea necesario añadir más campos a esta estructura, así como
  * modificar las funciones asociadas. ipv4_addr_t subnet_addr; ipv4_addr_t subnet_mask; char iface[IFACE_NAME_MAX_LENGTH]; ipv4_addr_t gateway_addr;
  */
-struct ipv4_route {//es una fila de la tabla
-  ipv4_addr_t subnet_addr;
-  ipv4_addr_t subnet_mask;
-  char iface[IFACE_NAME_MAX_LENGTH];
-  ipv4_addr_t gateway_addr;
-};
+
 
 
 /* ipv4_route_t * ipv4_route_create
@@ -108,7 +103,7 @@ void ipv4_route_free ( ipv4_route_t * route );
 
 
 /* Número de entradas máximo de la tabla de rutas IPv4 */
-#define IPv4_ROUTE_TABLE_SIZE 256
+//#define IPv4_ROUTE_TABLE_SIZE 256
 
 
 /* Definción de la estructura opaca que modela una tabla de rutas IPv4.

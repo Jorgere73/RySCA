@@ -1,13 +1,12 @@
 #ifndef _IPv4_H
 #define _IPv4_H
 
+#include "header.c"
 #include "header.h"
 #include "ipv4_route_table.h"
-#include "eth.h"
+
 
 #include <stdint.h>
-#include "eth.h"
-#include "ipv4_route_table.h"
 
 
 
@@ -15,31 +14,9 @@
 
 //Estructura que contiene a la interfaz de un host (eth_iface_t * iface), su dirección IP(ipv4_addr_t addr),
 //la máscara de red(ipv4_addr_t netmask), y su tabla de enrutamiento (ipv4_route_table_t * routing_table)
-typedef unsigned char ipv4_addr_t [IPv4_ADDR_SIZE];
+/*typedef unsigned char ipv4_addr_t [IPv4_ADDR_SIZE];
 typedef struct ipv4_layer ipv4_layer_t;
-typedef struct ipv4_frame ipv4_frame_t;
-
-struct ipv4_layer {
-eth_iface_t * iface;  /*iface=eth_open("eth1"); */
-ipv4_addr_t addr; /* 192.168.1.1 */
-ipv4_addr_t netmask; /* 255.255.255.0 */
-ipv4_route_table_t * routing_table;
-}; 
-
-struct ipv4_frame
-{
-  uint8_t version_headerLen;
-  uint8_t dscp;
-  uint16_t total_length;
-  uint16_t identification;
-  uint16_t flags_fragmentOffset;
-  uint8_t ttl;
-  uint8_t protocol;
-  uint16_t checksum;
-  ipv4_addr_t src_ip;
-  ipv4_addr_t dst_ip;
-  unsigned char payload[200];
-};
+typedef struct ipv4_frame ipv4_frame_t;*/
 
 
 /* Dirección IPv4 a cero "0.0.0.0" */

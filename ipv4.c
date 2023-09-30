@@ -1,5 +1,3 @@
-
-#include "arp.h"
 #include <unistd.h>
 #include <libgen.h>
 #include <string.h>
@@ -8,9 +6,12 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "ipv4_config.h" 
-#include "arp.h" 
+#include "eth.h"
+#include "arp.h"
+#include "ipv4_config.h"  
 #include "log.h"
+
+
 
 
 ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
@@ -82,15 +83,19 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   layer = ipv4_open("ipv4_config_client.txt","ipv4_route_table_client.txt"); 
   ipv4_route_t* route;
   route = ipv4_route_table_lookup(layer->routing_table, dst);
-  ipv4_route_print(route);
+  //ipv4_route_print(route);
   
   //route es la ruta más rápida encontrada en la tabla de rutas del layer hasta la dirección dst.
   //De no funcionar, devuelve -1
   
   //Si el destino se encuentra en la misma subred que nuestro host, encontramos su MAC y enviamos
-  char b[4];
+  char b[IPv4_STR_MAX_LENGTH];
   ipv4_addr_str(route->gateway_addr, b);
-  log_trace("%s", *b);
+  log_trace("a");
+  log_trace("%d", *b);
+  int g = atoi((char*)route->gateway_addr);
+  log_trace("%d", g);
+  
   if(memcmp(route->gateway_addr, IPv4_ZERO_ADDR, IPv4_ADDR_SIZE)==0)
   {
     printf("%s", eth_getname(layer->iface));
