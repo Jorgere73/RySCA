@@ -19,6 +19,19 @@ typedef unsigned char ipv4_addr_t [IPv4_ADDR_SIZE];
 typedef struct ipv4_layer ipv4_layer_t;
 typedef struct ipv4_route ipv4_route_t;
 typedef struct ipv4_route_table ipv4_route_table_t;
+/*
+  uint8_t version_headerLen;
+  uint8_t dscp;
+  uint16_t total_length;
+  uint16_t identification;
+  uint16_t flags_fragmentOffset;
+  uint8_t ttl;
+  uint8_t protocol;
+  uint16_t checksum;
+  ipv4_addr_t src_ip;
+  ipv4_addr_t dst_ip;
+  unsigned char payload[200];
+*/
 typedef struct ipv4_frame ipv4_frame;
 
 

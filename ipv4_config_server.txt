@@ -1,5 +1,5 @@
 # ipv4_config_server.txt
 #
-Interface eth0
-IPv4Address 192.168.1.200
+Interface wlan0
+IPv4Address 192.168.1.20
 SubnetMask 255.255.255.0
