@@ -136,53 +136,65 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   }
 }
 
-int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) 
+int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4_addr_t sender, int buf_len,long int timeout) 
 {
 
-//Metodo para recibir una trama ip
-struct ipv4_frame* pkt_ip_recv;
+  //Metodo para recibir una trama ip
+  struct ipv4_frame* pkt_ip_recv;
 
-// Inicializar temporizador para mantener timeout si se reciben tramas con tipo incorrecto.
+  // Inicializar temporizador para mantener timeout si se reciben tramas con tipo incorrecto.
   timerms_t timer;
   timerms_reset(&timer, timeout);
   // OBTENER MAC E IP PROPIA
-    mac_addr_t macPropia;
-    eth_getaddr(layer->iface, macPropia);
-    int isIP;
-    int isProtocol;
+  mac_addr_t macPropia;
+  eth_getaddr(layer->iface, macPropia);
+  int isIP;
+  int isProtocol;
+  char* addr = 0;
+  int eth;
+  memset(&eth, 0, sizeof(int));
   do {
     long int time_left = timerms_left(&timer);
+    eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, sizeof(struct ipv4_frame), time_left);
+    log_trace("%d", eth);
+    if (eth <= 0)
+    {
+      log_trace("No se ha recibido nada");
+    }
+    else
+    {
+      ipv4_addr_str(pkt_ip_recv->dst_ip, addr);
+      if(addr == NULL) { continue; }
+      isIP = (memcmp(layer->addr,pkt_ip_recv->dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
+      if(pkt_ip_recv->protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
+      {
+         isProtocol= 1;
+      } else 
+      { 
+        isProtocol = 0;
+      }
 
-    // Recibir trama del interfaz Ethernet y procesar errores 
-    int eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, sizeof(struct ipv4_frame), time_left);
-    if (eth == -1)
-        {
-            log_trace("Ha ocurrido un error");
-            return -1;
+      // Recibir trama del interfaz Ethernet y procesar errores 
+
+      if(isProtocol == 1 && isIP == 1)
+      {
+        buffer = (unsigned char*)&pkt_ip_recv;
+        log_trace("Número de bytes recibidos: %d", eth);
+        log_trace("IPv4 Recibido: ");
+        for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
+            log_trace("%02x ", ((unsigned char *)&pkt_ip_recv)[i]);
         }
-        else
-        {
-            pkt_ip_recv = (ipv4_frame*)buffer;
-            log_trace("Número de bytes recibidos: %d", eth);
-            log_trace("IPv4 Recibido: ");
-            for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
-                log_trace("%02x ", ((unsigned char *)&pkt_ip_recv)[i]);
-            }
-        }
-  //Hacemos las comprobaciones necesarias(Que esta bien) para salir del do while
-  
-  isIP = (memcmp(layer->addr,pkt_ip_recv->dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
-  if(pkt_ip_recv->protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
-  {
-     isProtocol= 1;
-  } else 
-  { 
-    isProtocol = 0;
-  }
+      }
+    }
+    if(time_left <= 0)
+    {
+      log_trace("No se ha recibido paquete IP");
+      return -1;
+    }
+    //Hacemos las comprobaciones necesarias(Que esta bien) para salir del do while
+    
+  } while (!(isIP && isProtocol));
 
-  }while (!(isIP && isProtocol));
-
-  //Y ahora que???
 
 return 0;
   
