@@ -88,19 +88,13 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   {
     printf("%s", eth_getname(layer->iface));
     int arp = arp_resolve(layer->iface, dst, &macdst);
-    char* vc = 0;
-    mac_addr_str(macdst, vc);
-    log_trace("-------------%s", vc);  
+    
     //Sacamos la dirección MAC de destino
     if (arp < 0)
-      {
-          log_trace("Ha ocurrido un error en el arp_resolve(el destino esta en nuestra subred)\n");
-      }
-      else if (arp == 0)
-      {
-          
-          log_trace("Enviamos bien el arp");
-      }
+    {
+          log_trace("MAC destino no ubicada\n");
+          return -1;
+    }
     int a = eth_send(layer->iface, macdst, TYPE_IP,(unsigned char*)pkt_ip_send, HEADER_LEN_IP+payload_len);
     free(pkt_ip_send);
     if (a < 0)
@@ -121,13 +115,8 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
     
     if (arp < 0)
       {
-          log_trace("Ha ocurrido un error con arp");
+          log_trace("MAC destino no ubicada");
           return -1;
-      }
-      else if (arp == 0)
-      {
-          
-          log_trace("Enviamos bien el arp");
       }
     //Sacamos dirección MAC del salto
     int a = eth_send(layer->iface, macdst, TYPE_IP, (unsigned char*)pkt_ip_send, HEADER_LEN_IP+payload_len); 
@@ -147,7 +136,7 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   }
 }
 
-/*int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) 
+int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout) 
 {
 
 //Metodo para recibir una trama ip
@@ -173,7 +162,7 @@ struct ipv4_frame* pkt_ip_recv;
         }
         else
         {
-            pkt_ip_recv = (ipv4_frame_t*)buffer;
+            pkt_ip_recv = (ipv4_frame*)buffer;
             log_trace("Número de bytes recibidos: %d", eth);
             log_trace("IPv4 Recibido: ");
             for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
@@ -198,7 +187,7 @@ struct ipv4_frame* pkt_ip_recv;
 return 0;
   
 }
-*/
+
 
 /* Dirección IPv4 a cero: "0.0.0.0" */
 ipv4_addr_t IPv4_ZERO_ADDR = { 0, 0, 0, 0 };

@@ -10,7 +10,7 @@
 #include "arp.h"
 #include "log.h"
 
-
+#define IP_MTU 1480
 #define DEFAULT_PAYLOAD_LEN 200
 
  
@@ -72,11 +72,11 @@ int main(int argc, char* argv[]){
     int err = ipv4_send(layer,dst,protocol, payload, DEFAULT_PAYLOAD_LEN);
     free(payload); 
     if (err == -1) {
-        log_trace("ERROR en ipv4_send()");
+        log_trace("ERROR en ipv4_send(), abortando");
         exit(-1);
     }   
-    /*
-    //int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout)
+
+    //int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout);
     unsigned char buffer[IP_MTU]; //
     ipv4_addr_t sender;
     long int timeout = 2000;
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]){
         log_trace("Recibidos %d bytes del Servidor IP (%s)", len, src_ip_str);
         print_pkt(buffer, len, 0);
     }
-*/
+
     log_trace("Cerrando interfaz IP.\n");
 
     ipv4_close(layer);

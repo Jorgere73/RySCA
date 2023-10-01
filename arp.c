@@ -101,8 +101,9 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t* mac_addr)
     memset(&isIP, 0, sizeof(int));
     memset(&isReply, 0, sizeof(int));
     //Declaramos e inicializamos las variables a 0
-
+    int count = 2;
     do{
+        log_trace("%d", count);
         //long int time_left = timerms_left(&timer);//Vemos cuanto tiempo le queda al timer para expirar
         int b = eth_recv(iface, macPropia, TYPE_ARP, (unsigned char*) &arp_reply, sizeof(struct arp_frame), timeout);
    
@@ -123,8 +124,15 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t* mac_addr)
         }
         isIP = (memcmp(arp.dest_ip,arp_reply.src_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega en el reply
         isReply = (ntohs(arp_reply.opcode) == OPCODE_REPLY);//Miramos si el opcode que nos llega en el reply es realmente de reply y no de otra cosa
-    }while(!(isIP && isReply)); 
+        count--;
 
+    }while(!(isIP && isReply) && count > 0); 
+
+    if(count <= 0)
+    {
+        log_trace("No se ha encontrado la MAC destino");
+        return -1;
+    }
     
     //mac_addr = arp_reply.src_addr;
     memcpy(mac_addr, arp_reply.src_addr, sizeof(mac_addr_t));
