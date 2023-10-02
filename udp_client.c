@@ -14,7 +14,7 @@
 int main ( int argc, char * argv[] )
 {
   /* Mostrar mensaje de ayuda si el número de argumentos es incorrecto */
- if(argc!=5){
+ if(argc!=6){
 		printf("ERROR\n");
 		printf("					                                          USO\n");
 		printf("udp_client.c <Puerto origen> <Archivo de configuracion> <Archivo con la ruta> <IP destino> <Puerto destinp\n>");
@@ -49,7 +49,7 @@ int main ( int argc, char * argv[] )
 //Recibimos paquete UDP
 
   printf("RECIBIENDO PAQUETE UDP...");
-  udp_recv(udp_layer,buffer,sender,UDP_MTU,timeout);
+  //udp_recv(udp_layer,buffer,sender,UDP_MTU,timeout);
 
 //Liberamos la memoria
 

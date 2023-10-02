@@ -1,7 +1,6 @@
 #ifndef _IPv4_H
 #define _IPv4_H
 
-#include "header.c"
 #include "header.h"
 #include "ipv4_route_table.h"
 

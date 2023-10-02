@@ -50,9 +50,6 @@ int main(int argc, char* argv[]){
     if(layer ==NULL){
         fprintf(stderr, "ERROR en ipv4_open()");
     }
-    char a[IPv4_STR_MAX_LENGTH];
-    ipv4_addr_str(layer->addr, a);
-    log_trace("----------------------%s", a);
   
 
 

@@ -140,7 +140,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
 {
 
   //Metodo para recibir una trama ip
-  struct ipv4_frame* pkt_ip_recv;
+  struct ipv4_frame* pkt_ip_recv = (ipv4_frame*) calloc(1, buf_len+HEADER_LEN_IP);
 
   // Inicializar temporizador para mantener timeout si se reciben tramas con tipo incorrecto.
   timerms_t timer;
@@ -150,21 +150,22 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
   eth_getaddr(layer->iface, macPropia);
   int isIP;
   int isProtocol;
-  char* addr = 0;
-  int eth;
-  memset(&eth, 0, sizeof(int));
+  char addr_str[IPv4_STR_MAX_LENGTH];
+  int eth = 0;
   do {
     long int time_left = timerms_left(&timer);
-    eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, sizeof(struct ipv4_frame), time_left);
-    log_trace("%d", eth);
+    eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, buf_len+HEADER_LEN_IP, time_left);
+    
     if (eth <= 0)
     {
       log_trace("No se ha recibido nada");
     }
     else
     {
-      ipv4_addr_str(pkt_ip_recv->dst_ip, addr);
-      if(addr == NULL) { continue; }
+    log_trace("%s", &addr_str);
+      ipv4_addr_str(pkt_ip_recv->dst_ip, addr_str);
+     // if(addr_str == NULL) { continue; }
+    log_trace("a");
       isIP = (memcmp(layer->addr,pkt_ip_recv->dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
       if(pkt_ip_recv->protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
       {

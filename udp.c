@@ -71,13 +71,13 @@ int udp_send(udp_layer_t *udp_layer,ipv4_addr_t ip_dest,uint16_t dst_port,unsign
 return 0;
 } 
 
-
-int udp_recv(udp_layer_t* udp_layer,unsigned char buffer []/*uint16_t src_port*/, ipv4_addr_t sender, int buffer_len, long int timeout){//logica de los puertos?
+/*
+int udp_recv(udp_layer_t* udp_layer,unsigned char buffer [], ipv4_addr_t sender, int buffer_len, long int timeout){//logica de los puertos?
 
 
 struct udp_frame pkt_udp_recv;
 
-/* Inicializar temporizador para mantener timeout si se reciben tramas con tipo incorrecto. */
+// Inicializar temporizador para mantener timeout si se reciben tramas con tipo incorrecto.
   timerms_t timer;
   timerms_reset(&timer, timeout);
 
@@ -88,7 +88,7 @@ struct udp_frame pkt_udp_recv;
             printf("Error al recibir el datagrama.\n");
             return -1;
     }
-    pkt_udp_recv = (struct udp_frame)buffer;//Ver si esto tiene sentido------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
+    pkt_udp_recv = (struct udp_frame*)buffer;//Ver si esto tiene sentido------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- 
 
   }while(!(pkt_udp_recv.dst_port== udp_layer->src_port));
 
@@ -96,3 +96,4 @@ struct udp_frame pkt_udp_recv;
 return 0;
 
 }
+*/
