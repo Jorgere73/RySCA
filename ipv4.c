@@ -70,11 +70,12 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   pkt_ip_send->total_length = htons(HEADER_LEN_IP+payload_len);
   pkt_ip_send->identification = htons(0x2816);
   pkt_ip_send->flags_fragmentOffset = FLAGS_FO; 
-  pkt_ip_send->ttl = 64; //Hay que ver que numero ponemos de ttl(Puede que sea 64)
+  pkt_ip_send->ttl = 32; //Hay que ver que numero ponemos de ttl(Puede que sea 64)
   pkt_ip_send->protocol = protocol;
-  pkt_ip_send->checksum = ipv4_checksum((unsigned char*) pkt_ip_send,HEADER_LEN_IP);
   memcpy(pkt_ip_send->src_ip, layer->addr, IPv4_ADDR_SIZE);
   memcpy(pkt_ip_send->dst_ip, dst, IPv4_ADDR_SIZE);
+  pkt_ip_send->checksum = 0;
+  pkt_ip_send->checksum = htons(ipv4_checksum((unsigned char*) pkt_ip_send,HEADER_LEN_IP));
   memcpy(pkt_ip_send->payload, payload, payload_len);
   ipv4_route_t* route;
   route = ipv4_route_table_lookup(layer->routing_table, dst);
@@ -126,11 +127,6 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
           log_trace("Ha ocurrido un error");
           return -1;
       }
-      else if (a >= 0)
-      {
-          log_trace("Número de bytes enviados: %d", a);
-          log_trace("Esto es lo que enviamos en str del IP: %s", (unsigned char *) &pkt_ip_send);
-      }
     return (a-HEADER_LEN_IP);
     
   }
@@ -140,7 +136,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
 {
 
   //Metodo para recibir una trama ip
-  struct ipv4_frame* pkt_ip_recv = (ipv4_frame*) calloc(1, buf_len+HEADER_LEN_IP);
+  struct ipv4_frame pkt_ip_recv;
 
   // Inicializar temporizador para mantener timeout si se reciben tramas con tipo incorrecto.
   timerms_t timer;
@@ -163,11 +159,11 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
     else
     {
     log_trace("%s", &addr_str);
-      ipv4_addr_str(pkt_ip_recv->dst_ip, addr_str);
+      ipv4_addr_str(pkt_ip_recv.dst_ip, addr_str);
      // if(addr_str == NULL) { continue; }
     log_trace("a");
-      isIP = (memcmp(layer->addr,pkt_ip_recv->dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
-      if(pkt_ip_recv->protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
+      isIP = (memcmp(layer->addr,pkt_ip_recv.dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
+      if(pkt_ip_recv.protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
       {
          isProtocol= 1;
       } else 
@@ -179,7 +175,8 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
 
       if(isProtocol == 1 && isIP == 1)
       {
-        buffer = (unsigned char*)&pkt_ip_recv;
+        //TODO: memcmp
+        //buffer = (unsigned char*)&pkt_ip_recv;
         log_trace("Número de bytes recibidos: %d", eth);
         log_trace("IPv4 Recibido: ");
         for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
