@@ -146,12 +146,12 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
   int isIP;
   int isProtocol;
   char addr_str[IPv4_STR_MAX_LENGTH];
-  int eth_len = 0;
+  int eth = 0;
   do {
     long int time_left = timerms_left(&timer);
-    eth_len = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, buf_len+HEADER_LEN_IP, time_left);
+    eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, buf_len+HEADER_LEN_IP, time_left);
     
-    if (eth_len <= 0)
+    if (eth <= 0)
     {
       log_trace("No se ha recibido nada");
     }
@@ -161,7 +161,13 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
       log_trace("Paquete enviado desde: %s", &addr_str);
      // if(addr_str == NULL) { continue; }
       isIP = (memcmp(layer->addr,pkt_ip_recv.dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
-      isProtocol = (pkt_ip_recv.protocol == protocol);
+      if(pkt_ip_recv.protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
+      {
+         isProtocol= 1;
+      } else 
+      { 
+        isProtocol = 0;
+      }
 
       // Recibir trama del interfaz Ethernet y procesar errores 
 
@@ -173,32 +179,21 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
         /*log_trace("IPv4 Recibido: ");
         for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
             log_trace("%02x ", ((unsigned char *)&pkt_ip_recv)[i]);
-          }
         */
         
       }
     }
-    /*if(time_left <= 0)
+    if(time_left <= 0)
     {
       log_trace("No se ha recibido paquete IP");
       return -1;
-    }*/
+    }
     //Hacemos las comprobaciones necesarias(Que esta bien) para salir del do while
     
   } while (!(isIP && isProtocol));
-   int payload_len;
-  payload_len = eth_len - HEADER_LEN_IP;
-  if (buf_len > payload_len) {
-    buf_len = payload_len;
-  }
-  memcpy(buffer, pkt_ip_recv.payload, buf_len);
-        log_trace("Número de bytes recibidos: %d", eth_len);
-        log_trace("IPv4 Recibido: ");
-        for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
-            log_trace("%02x ", ((unsigned char *)&pkt_ip_recv)[i]);
-        }
 
-return payload_len;
+
+return 0;
   
 }
 
