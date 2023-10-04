@@ -297,6 +297,7 @@ int eth_recv
 
   } while ( ! (is_my_mac && is_target_type) );
   
+  
   /* Trama recibida con 'tipo' indicado. Copiar datos y dirección MAC origen */
   memcpy(src, eth_frame_ptr->src_addr, MAC_ADDR_SIZE);
   payload_len = frame_len - ETH_HEADER_SIZE;

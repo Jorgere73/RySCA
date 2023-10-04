@@ -147,12 +147,12 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
   int isIP;
   int isProtocol;
   char addr_str[IPv4_STR_MAX_LENGTH];
-  int eth = 0;
+  int eth_len = 0;
   do {
     long int time_left = timerms_left(&timer);
-    eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, buf_len+HEADER_LEN_IP, time_left);
+    eth_len = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, buf_len+HEADER_LEN_IP, time_left);
     
-    if (eth <= 0)
+    if (eth_len <= 0)
     {
       log_trace("No se ha recibido nada");
     }
@@ -162,39 +162,35 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
       ipv4_addr_str(pkt_ip_recv.dst_ip, addr_str);
      // if(addr_str == NULL) { continue; }
     log_trace("a");
+      
       isIP = (memcmp(layer->addr,pkt_ip_recv.dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
-      if(pkt_ip_recv.protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
-      {
-         isProtocol= 1;
-      } else 
-      { 
-        isProtocol = 0;
-      }
+      isProtocol = (pkt_ip_recv.protocol == protocol);
 
       // Recibir trama del interfaz Ethernet y procesar errores 
 
-      if(isProtocol == 1 && isIP == 1)
-      {
-        //TODO: memcmp
-        //buffer = (unsigned char*)&pkt_ip_recv;
-        log_trace("Número de bytes recibidos: %d", eth);
+      
+    }
+    /*if(time_left <= 0)
+    {
+      log_trace("No se ha recibido paquete IP");
+      return -1;
+    }*/
+    //Hacemos las comprobaciones necesarias(Que esta bien) para salir del do while
+    
+  } while (!(isIP && isProtocol));
+   int payload_len;
+  payload_len = eth_len - HEADER_LEN_IP;
+  if (buf_len > payload_len) {
+    buf_len = payload_len;
+  }
+  memcpy(buffer, pkt_ip_recv.payload, buf_len);
+        log_trace("Número de bytes recibidos: %d", eth_len);
         log_trace("IPv4 Recibido: ");
         for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
             log_trace("%02x ", ((unsigned char *)&pkt_ip_recv)[i]);
         }
-      }
-    }
-    if(time_left <= 0)
-    {
-      log_trace("No se ha recibido paquete IP");
-      return -1;
-    }
-    //Hacemos las comprobaciones necesarias(Que esta bien) para salir del do while
-    
-  } while (!(isIP && isProtocol));
 
-
-return 0;
+return payload_len;
   
 }
 
