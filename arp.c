@@ -61,7 +61,6 @@ int arp_resolve(eth_iface_t *iface, ipv4_addr_t ip_addr, mac_addr_t* mac_addr)
     memcpy(arp.dest_addr, *mac_addr, MAC_ADDR_SIZE);
     memcpy(arp.dest_ip, ip_addr, IPv4_ADDR_SIZE);
     memcpy(arp.src_addr, macPropia, MAC_ADDR_SIZE);
-    //memcpy(arp.src_ip, ipPropia, IPv4_ADDR_SIZE);
     arp.hardware_type = htons(HARDWARE_TYPE);
     arp.type = htons(TYPE_IP);
     arp.hardware_size = HARDWARE_SIZE;

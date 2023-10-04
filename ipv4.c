@@ -30,6 +30,7 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
     ipv4_addr_str(layer->netmask,netmask_str);
     log_trace("Estamos con la Mascara: %s",netmask_str);
     
+  
     layer->routing_table=ipv4_route_table_create(); //HAY QUE LIBERAR!!!!!!!! ipv4_route_table_free()
 
     int numRutasLeidas = ipv4_route_table_read(file_conf_route, layer->routing_table);/* Leer tabla de reenvío IP de file_conf_route */
@@ -39,7 +40,6 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
     }else if(numRutasLeidas ==-1){
       log_trace("Se ha producido algún error al leer el fichero de rutas.");
     }
-
     layer->iface=eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
     return layer;
 }
@@ -105,7 +105,6 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
       else if (a > 0)
       {
           log_trace("Número de bytes enviados: %d\n", a);
-          log_trace("Esto es lo que enviamos en str del IP: \n %s", (unsigned char *) &pkt_ip_send);
       }
     return (a-HEADER_LEN_IP);
   }
@@ -158,10 +157,9 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
     }
     else
     {
-    log_trace("%s", &addr_str);
-      ipv4_addr_str(pkt_ip_recv.dst_ip, addr_str);
+      ipv4_addr_str(pkt_ip_recv.src_ip, addr_str);
+      log_trace("Paquete enviado desde: %s", &addr_str);
      // if(addr_str == NULL) { continue; }
-    log_trace("a");
       isIP = (memcmp(layer->addr,pkt_ip_recv.dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
       if(pkt_ip_recv.protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
       {
@@ -178,10 +176,12 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
         //TODO: memcmp
         //buffer = (unsigned char*)&pkt_ip_recv;
         log_trace("Número de bytes recibidos: %d", eth);
-        log_trace("IPv4 Recibido: ");
+        /*log_trace("IPv4 Recibido: ");
         for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
             log_trace("%02x ", ((unsigned char *)&pkt_ip_recv)[i]);
-        }
+          }
+        */
+        
       }
     }
     if(time_left <= 0)
