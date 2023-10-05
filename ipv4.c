@@ -55,7 +55,7 @@ int ipv4_close (ipv4_layer_t * layer) {
 }
 
 
-int ºipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len) {
+int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len) {
   //Metodo para enviar una trama ip
   ipv4_frame* pkt_ip_send = calloc(1, sizeof(ipv4_frame));
   mac_addr_t macdst;
@@ -150,7 +150,6 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
   do {
     time_left = timerms_left(&timer);
     eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, buf_len+HEADER_LEN_IP, time_left);
-    log_trace("%d", eth);
     if (eth <= 0)
     {
       log_trace("No se ha recibido nada");
@@ -160,6 +159,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
     {
       ipv4_addr_str(pkt_ip_recv.src_ip, addr_str);
      // if(addr_str == NULL) { continue; }
+    log_trace("%d %d", protocol, pkt_ip_recv.protocol);
       isIP = (memcmp(layer->addr,pkt_ip_recv.dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
       if(pkt_ip_recv.protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
       {
