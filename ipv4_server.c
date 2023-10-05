@@ -32,7 +32,9 @@ int main(int argc, char* argv[]){
     {
         printf("Esperando datagrama IP...\n");
         len = ipv4_recv(layer,protocol,buffer,sender,IP_MTU,timeout);
-        log_trace("%d", len);
+        char* c = 0;
+        ipv4_addr_str(sender, c);
+        log_trace("%s", c);
         //Reenviamos el mismo datagrama? NO se muy bien cual es la funcion del servdior
         //De momento vamos a hacer que reenvie el mismo para asegurarnos que funciona
         //Mas adelante le implementaremos una funcionalidad si es que la tiene
