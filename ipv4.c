@@ -55,7 +55,7 @@ int ipv4_close (ipv4_layer_t * layer) {
 }
 
 
-int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len) {
+int ºipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int payload_len) {
   //Metodo para enviar una trama ip
   ipv4_frame* pkt_ip_send = calloc(1, sizeof(ipv4_frame));
   mac_addr_t macdst;
@@ -74,8 +74,8 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   memcpy(pkt_ip_send->src_ip, layer->addr, IPv4_ADDR_SIZE);
   memcpy(pkt_ip_send->dst_ip, dst, IPv4_ADDR_SIZE);
   pkt_ip_send->checksum = 0;
-  pkt_ip_send->checksum = htons(ipv4_checksum((unsigned char*) pkt_ip_send,HEADER_LEN_IP));
   memcpy(pkt_ip_send->payload, payload, payload_len);
+  pkt_ip_send->checksum = htons(ipv4_checksum((unsigned char*) pkt_ip_send,HEADER_LEN_IP));
   ipv4_route_t* route;
   route = ipv4_route_table_lookup(layer->routing_table, dst);
   //ipv4_route_print(route);
@@ -150,7 +150,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
   do {
     time_left = timerms_left(&timer);
     eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, buf_len+HEADER_LEN_IP, time_left);
-    
+    log_trace("%d", eth);
     if (eth <= 0)
     {
       log_trace("No se ha recibido nada");
