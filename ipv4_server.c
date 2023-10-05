@@ -28,10 +28,11 @@ int main(int argc, char* argv[]){
     ipv4_addr_t sender;
     long int timeout = 10000;
     int sendstatus = 0;
+    int len = 0;
     do
     {
         printf("Esperando datagrama IP...\n");
-        int len= ipv4_recv(layer,protocol,buffer,sender,IP_MTU,timeout);
+        len = ipv4_recv(layer,protocol,buffer,sender,IP_MTU,timeout);
 
         //Reenviamos el mismo datagrama? NO se muy bien cual es la funcion del servdior
         //De momento vamos a hacer que reenvie el mismo para asegurarnos que funciona
