@@ -19,15 +19,14 @@ int main(int argc, char* argv[]){
     uint8_t protocol = atoi(argv[1]); //atoi para pasar de char* a int
 
     //Inicializamos el layer con los archivos de configuracion
-    ipv4_layer_t* layer;
-    layer = ipv4_open("ipv4_config_server.txt","ipv4_route_table_server.txt"); //Esto se puede psaasar por parametro
+    ipv4_layer_t* layer = ipv4_open("ipv4_config_server.txt","ipv4_route_table_server.txt"); //Esto se puede psaasar por parametro
     if(layer ==NULL){
         fprintf(stderr, "ERROR en ipv4_open()");
         return 0;
     }
     unsigned char buffer[IP_MTU]; 
     ipv4_addr_t sender;
-    long int timeout = 10000;
+    long int timeout = 5000;
     int len = 0;
     do
     {
@@ -38,8 +37,11 @@ int main(int argc, char* argv[]){
         //De momento vamos a hacer que reenvie el mismo para asegurarnos que funciona
         //Mas adelante le implementaremos una funcionalidad si es que la tiene
     } while (len <= 0);
-        printf("Enviando datagrama desde servidor");
-        int sendstatus = ipv4_send(layer, sender, protocol, buffer, len); //devolvemos el mismo datagrama con la longitud del que nos han enviado
-    
+    printf("Enviando datagrama desde servidor");
+    int sendstatus = ipv4_send(layer, sender, protocol, buffer, len); //devolvemos el mismo datagrama con la longitud del que nos han enviado
+    if(sendstatus <= 0)
+    {
+        log_trace("No se ha envíado nada");
+    }
     ipv4_close(layer);
 } 
