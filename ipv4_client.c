@@ -75,7 +75,7 @@ int main(int argc, char* argv[]){
     //int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout);
     unsigned char buffer[IP_MTU];
     ipv4_addr_t sender;
-    long int timeout = 2000;
+    long int timeout = 10000;
     int len= ipv4_recv(layer,protocol,buffer,sender,IP_MTU,timeout);
     printf("ipv4_recv()\n");
     if (len == -1) {

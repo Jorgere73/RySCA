@@ -22,20 +22,30 @@ int main(int argc, char* argv[]){
     layer = ipv4_open("ipv4_config_server.txt","ipv4_route_table_server.txt"); //Esto se puede psaasar por parametro
     if(layer ==NULL){
         fprintf(stderr, "ERROR en ipv4_open()");
+        return 0;
     }
     unsigned char buffer[IP_MTU]; 
     ipv4_addr_t sender;
-    long int timeout = 2000;
-    printf("Esperando datagrama IP...\n");
-    int len= ipv4_recv(layer,protocolo,buffer,sender,IP_MTU,timeout);
+    long int timeout = 20000;
+    int sendstatus = 0;
+    do
+    {
+        printf("Esperando datagrama IP...\n");
+        int len= ipv4_recv(layer,protocol,buffer,sender,IP_MTU,timeout);
 
-    //Reenviamos el mismo datagrama? NO se muy bien cual es la funcion del servdior
-    //De momento vamos a hacer que reenvie el mismo para asegurarnos que funciona
-    //Mas adelante le implementaremos una funcionalidad si es que la tiene
+        //Reenviamos el mismo datagrama? NO se muy bien cual es la funcion del servdior
+        //De momento vamos a hacer que reenvie el mismo para asegurarnos que funciona
+        //Mas adelante le implementaremos una funcionalidad si es que la tiene
 
-    printf("Enviando datagrama desde servidor");
-    ipv4_send(layer, sender, protocol, buffer, len); //devolvemos el mismo datagrama con la longitud del que nos han enviado
-
-    //Cerramos el layer
+        if(len <= 0)
+        {
+            //No se ha recibido nada, o timeout, así que error
+            continue;
+        }
+        printf("Enviando datagrama desde servidor");
+        sendstatus = ipv4_send(layer, sender, protocol, buffer, len); //devolvemos el mismo datagrama con la longitud del que nos han enviado
+    } while (sendstatus <= 0);
+    
+        //Cerramos el layer
     ipv4_close(layer);
 } 

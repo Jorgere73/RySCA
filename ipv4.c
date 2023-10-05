@@ -28,7 +28,6 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
     log_trace("Estamos con la IP: %s",ip_str);
     char netmask_str[IPv4_STR_MAX_LENGTH]; 
     ipv4_addr_str(layer->netmask,netmask_str);
-    log_trace("Estamos con la Mascara: %s",netmask_str);
     
   
     layer->routing_table=ipv4_route_table_create(); //HAY QUE LIBERAR!!!!!!!! ipv4_route_table_free()
@@ -147,18 +146,19 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
   int isProtocol;
   char addr_str[IPv4_STR_MAX_LENGTH];
   int eth = 0;
+  long int time_left;
   do {
-    long int time_left = timerms_left(&timer);
+    time_left = timerms_left(&timer);
     eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, buf_len+HEADER_LEN_IP, time_left);
     
     if (eth <= 0)
     {
       log_trace("No se ha recibido nada");
+      return -1;
     }
     else
     {
       ipv4_addr_str(pkt_ip_recv.src_ip, addr_str);
-      log_trace("Paquete enviado desde: %s", &addr_str);
      // if(addr_str == NULL) { continue; }
       isIP = (memcmp(layer->addr,pkt_ip_recv.dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
       if(pkt_ip_recv.protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
@@ -175,6 +175,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
       {
         //TODO: memcmp
         //buffer = (unsigned char*)&pkt_ip_recv;
+       log_trace("Paquete enviado desde: %s", &addr_str);
         log_trace("Número de bytes recibidos: %d", eth);
         /*log_trace("IPv4 Recibido: ");
         for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
