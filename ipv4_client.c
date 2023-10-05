@@ -76,7 +76,7 @@ int main(int argc, char* argv[]){
     unsigned char buffer[IP_MTU];
     ipv4_addr_t sender;
     long int timeout = 10000;
-    int len = ipv4_recv(layer,protocol,buffer,sender,IP_MTU,timeout);
+    long int len= ipv4_recv(layer,protocol,buffer,sender,IP_MTU,timeout);
     printf("ipv4_recv()\n");
     if (len == -1) {
         log_trace("ERROR en ipv4_recv()");
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]){
 
     log_trace("Cerrando interfaz IP.\n");
 
-    ipv4_close(layer);
+    //ipv4_close(layer);
     return 0;
 }
 

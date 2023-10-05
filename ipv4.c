@@ -74,8 +74,8 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   memcpy(pkt_ip_send->src_ip, layer->addr, IPv4_ADDR_SIZE);
   memcpy(pkt_ip_send->dst_ip, dst, IPv4_ADDR_SIZE);
   pkt_ip_send->checksum = 0;
-  memcpy(pkt_ip_send->payload, payload, payload_len);
   pkt_ip_send->checksum = htons(ipv4_checksum((unsigned char*) pkt_ip_send,HEADER_LEN_IP));
+  memcpy(pkt_ip_send->payload, payload, payload_len);
   ipv4_route_t* route;
   route = ipv4_route_table_lookup(layer->routing_table, dst);
   //ipv4_route_print(route);
@@ -150,6 +150,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
   do {
     time_left = timerms_left(&timer);
     eth = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv, buf_len+HEADER_LEN_IP, time_left);
+    
     if (eth <= 0)
     {
       log_trace("No se ha recibido nada");
@@ -159,7 +160,6 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
     {
       ipv4_addr_str(pkt_ip_recv.src_ip, addr_str);
      // if(addr_str == NULL) { continue; }
-    log_trace("%d %d", protocol, pkt_ip_recv.protocol);
       isIP = (memcmp(layer->addr,pkt_ip_recv.dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
       if(pkt_ip_recv.protocol == protocol)//Comprobamos si es el protocolo que nos pasan por parametro
       {
@@ -176,12 +176,13 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
         //TODO: memcmp
         //buffer = (unsigned char*)&pkt_ip_recv;
        log_trace("Paquete enviado desde: %s", &addr_str);
+       sender = pkt_ip_recv.src_ip;
         log_trace("Número de bytes recibidos: %d", eth);
         /*log_trace("IPv4 Recibido: ");
         for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
             log_trace("%02x ", ((unsigned char *)&pkt_ip_recv)[i]);
         */
-        
+        return eth;
       }
     }
     if(time_left <= 0)
@@ -194,7 +195,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
   } while (!(isIP && isProtocol));
 
 
-return eth;
+return 0;
   
 }
 
