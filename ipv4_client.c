@@ -78,21 +78,20 @@ int main(int argc, char* argv[]){
     long int timeout = 10000;
     long int len= ipv4_recv(layer,protocol,buffer,sender,IP_MTU,timeout);
     printf("ipv4_recv()\n");
-    if (len == -1) {
-        log_trace("ERROR en ipv4_recv()");
-    } else if (len == 0) {
-        log_trace("ERROR: No hay respuesta del Servidor IPv4");
+    if (len <= 0)
+    {
+        log_trace("No ha llegado ningun paquete");
+        return 0;
     }
-    if(len>0){
-        char src_ip_str[IPv4_STR_MAX_LENGTH];
-        ipv4_addr_str( sender, src_ip_str ); 
-        log_trace("Recibidos %d bytes del Servidor IP (%s)", len, src_ip_str);
-        //print_pkt(buffer, len, 0);
-    }
+    char src_ip_str[IPv4_STR_MAX_LENGTH];
+    ipv4_addr_str( sender, src_ip_str ); 
+    log_trace("Recibidos %d bytes del Servidor IP (%s)", len, src_ip_str);
+    //print_pkt(buffer, len, 0);
+    
 
     log_trace("Cerrando interfaz IP.\n");
 
-    //ipv4_close(layer);
+    ipv4_close(layer);
     return 0;
 }
 
