@@ -5,6 +5,7 @@
 #include <rawnet.h>
 #include <timerms.h>
 #include <arpa/inet.h>
+#include "log.h"
 
 #include "ipv4.h"
 //Un servidor su funcion es primero recibir datos de un cliente y mas adelante enviar datos de vuelta.
@@ -32,7 +33,7 @@ int main(int argc, char* argv[]){
     {
         printf("Esperando datagrama IP...\n");
         len = ipv4_recv(layer,protocol,buffer,sender,IP_MTU,timeout);
-
+        log_trace("%d", len);
         //Reenviamos el mismo datagrama? NO se muy bien cual es la funcion del servdior
         //De momento vamos a hacer que reenvie el mismo para asegurarnos que funciona
         //Mas adelante le implementaremos una funcionalidad si es que la tiene

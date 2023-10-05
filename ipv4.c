@@ -194,7 +194,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
   } while (!(isIP && isProtocol));
 
 
-return 0;
+return eth;
   
 }
 
