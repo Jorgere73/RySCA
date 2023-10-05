@@ -26,7 +26,7 @@ int main(int argc, char* argv[]){
     }
     unsigned char buffer[IP_MTU]; 
     ipv4_addr_t sender;
-    long int timeout = 20000;
+    long int timeout = 10000;
     int sendstatus = 0;
     do
     {
@@ -36,16 +36,9 @@ int main(int argc, char* argv[]){
         //Reenviamos el mismo datagrama? NO se muy bien cual es la funcion del servdior
         //De momento vamos a hacer que reenvie el mismo para asegurarnos que funciona
         //Mas adelante le implementaremos una funcionalidad si es que la tiene
-
-        if(len <= 0)
-        {
-            //No se ha recibido nada, o timeout, así que error
-            continue;
-        }
+    } while (sendstatus <= 0);
         printf("Enviando datagrama desde servidor");
         sendstatus = ipv4_send(layer, sender, protocol, buffer, len); //devolvemos el mismo datagrama con la longitud del que nos han enviado
-    } while (sendstatus <= 0);
     
-        //Cerramos el layer
     ipv4_close(layer);
 } 
