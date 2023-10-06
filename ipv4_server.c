@@ -40,6 +40,7 @@ int main(int argc, char* argv[]){
         //Mas adelante le implementaremos una funcionalidad si es que la tiene
     } while (len <= 0);
     printf("Enviando datagrama desde servidor");
+     
     int sendstatus = ipv4_send(layer, sender, protocol, buffer, len); //devolvemos el mismo datagrama con la longitud del que nos han enviado
     if(sendstatus <= 0)
     {

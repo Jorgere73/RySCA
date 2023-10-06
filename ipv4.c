@@ -171,6 +171,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
 
       // Recibir trama del interfaz Ethernet y procesar errores 
 
+    log_trace("%d %d", protocol, pkt_ip_recv.protocol );
       if(isProtocol == 1 && isIP == 1)
       {
         //TODO: memcmp
@@ -182,6 +183,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
         for (int i = 0; i < sizeof(struct ipv4_frame); i++) {
             log_trace("%02x ", ((unsigned char *)&pkt_ip_recv)[i]);
         */
+       log_trace("%d", eth);
         return eth;
       }
     }
