@@ -11,7 +11,7 @@
 #include "log.h"
 
 #define IP_MTU 1480
-#define DEFAULT_PAYLOAD_LEN 200
+#define DEFAULT_PAYLOAD_LEN 100
 
  
 //int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned char * payload, int DEFAULT_PAYLOAD_LEN)
@@ -42,7 +42,7 @@ int main(int argc, char* argv[]){
     ipv4_addr_t dst;
     //memset(&dst, 0, sizeof(ipv4_addr_t));
     ipv4_str_addr(argv[1], dst);
-    uint8_t protocol = atoi(argv[2]);
+    uint8_t protocol = (uint8_t) atoi(argv[2]);
     log_trace("protocol: %d", protocol);
 
     ipv4_layer_t* layer = ipv4_open("ipv4_config_client.txt","ipv4_route_table_client.txt"); //Esto se puede psaasar por parametro
@@ -66,7 +66,9 @@ int main(int argc, char* argv[]){
     //ipv4_route_table_print(layer->routing_table);
     
 //Falla que cuando entra en ipv4_send cambia el valor de las rutas
+    printf("ipv4_client--Procedemos a enviar el paquete IP\n");
     int err = ipv4_send(layer,dst,protocol, payload, DEFAULT_PAYLOAD_LEN);
+    printf("ipv4_client--Paquete IP enviado\n");
     if (err == -1) {
         log_trace("ERROR en ipv4_send(), abortando");
         exit(-1);
@@ -76,7 +78,7 @@ int main(int argc, char* argv[]){
     unsigned char buffer[IP_MTU];
     ipv4_addr_t sender;
     long int timeout = 2000;
-    long int len= ipv4_recv(layer, protocol,buffer,sender,IP_MTU,timeout);
+    long int len= ipv4_recv(layer,protocol,buffer,sender,IP_MTU,timeout);
     printf("ipv4_recv()\n");
     if (len <= 0)
     {

@@ -180,7 +180,6 @@ int eth_send
   memcpy(eth_frame.src_addr, iface->mac_address, MAC_ADDR_SIZE);
   eth_frame.type = htons(type);  
   memcpy(eth_frame.payload, payload, payload_len);
-  printf("a\n");
   int eth_frame_len = ETH_HEADER_SIZE + payload_len;
 
   /* Imprimir trama Ethernet */

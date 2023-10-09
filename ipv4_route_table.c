@@ -122,7 +122,7 @@ int ipv4_route_lookup ( ipv4_route_t * route, ipv4_addr_t addr )
       break;    
     }
   }
-  log_trace("Prefijo de la red: %d", prefix_length);
+  printf("lookup--Prefijo de la red: %d\n", prefix_length);
 
   } else
   {
