@@ -17,7 +17,7 @@ int main ( int argc, char * argv[] )
  if(argc!=6){
 		printf("ERROR\n");
 		printf("					                                          USO\n");
-		printf("udp_client.c <Puerto origen> <Archivo de configuracion> <Archivo con la ruta> <IP destino> <Puerto destinp\n>");
+		printf("udp_client.c <Puerto origen> <Archivo de configuracion> <Archivo con la ruta> <IP destino> <Puerto destino\n>");
         return 1;
 	}
  
@@ -43,13 +43,13 @@ int main ( int argc, char * argv[] )
     ipv4_addr_t sender;
     long int timeout = 2000;
 //Enviamos paquete UDP
-  printf("ENVIANDO PAQUETE UDP...");
+  printf("udp_client--ENVIANDO PAQUETE UDP...");
   udp_send(udp_layer,ip_addr,puerto_dst,payload, DEFAULT_PAYLOAD_LEN);
 
 //Recibimos paquete UDP
 
-  printf("RECIBIENDO PAQUETE UDP...");
-  //udp_recv(udp_layer,buffer,sender,UDP_MTU,timeout);
+  printf("udp_client--RECIBIENDO PAQUETE UDP...");
+  udp_recv(udp_layer,buffer,sender,UDP_MTU,puerto_dst,timeout);
 
 //Liberamos la memoria
 

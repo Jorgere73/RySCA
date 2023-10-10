@@ -17,8 +17,7 @@ ipv4_addr_t IPv4_ZERO_ADDR = { 0, 0, 0, 0 };
 
 ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
   
-    ipv4_layer_t* layer = (ipv4_layer_t*)calloc(1, sizeof(ipv4_layer_t));
-    
+    ipv4_layer_t* layer = malloc(sizeof(ipv4_layer_t));
     char ifname[16];
     //Leemos el archivo de configuracion y de ahi sacamos la interfaz, la IP y la mascara
     ipv4_config_read( file_conf, ifname , layer->addr,layer->netmask);
@@ -34,13 +33,13 @@ ipv4_layer_t* ipv4_open(char * file_conf, char * file_conf_route) {
     layer->routing_table=ipv4_route_table_create(); //HAY QUE LIBERAR!!!!!!!! ipv4_route_table_free()
 
     int numRutasLeidas = ipv4_route_table_read(file_conf_route, layer->routing_table);/* Leer tabla de reenvío IP de file_conf_route */
-    printf("ipv4_open()--Se han leído %d rutas\n", numRutasLeidas);
+    
     if(numRutasLeidas == 0){
       printf("ipv4_open()--No se ha leido ninguna ruta");
     }else if(numRutasLeidas ==-1){
       printf("ipv4_open()--Se ha producido algún error al leer el fichero de rutas.\n");
     }
-
+    printf("ipv4_open()--Se han leído %d rutas\n", numRutasLeidas);
     layer->iface=eth_open ( ifname );/* 4. Inicializar capa Ethernet con eth_open() */
     return layer;
 }
@@ -81,19 +80,21 @@ int ipv4_send (ipv4_layer_t * layer, ipv4_addr_t dst, uint8_t protocol,unsigned 
   memcpy(pkt_ip_send.payload, payload, payload_len);
   ipv4_route_t* route = ipv4_route_table_lookup(layer->routing_table, dst);
   ipv4_route_print(route);
+  printf("\nAqui llega\n");
+  char gw_str[IPv4_STR_MAX_LENGTH];
+  ipv4_addr_str(route->gateway_addr, gw_str);//ESTO DA EL SEGMENTATION FAULT
+  
+  printf("ipv4_send()--route-gateway es : %s\n", gw_str);
   
   //route es la ruta más rápida encontrada en la tabla de rutas del layer hasta la dirección dst.
   //De no funcionar, devuelve -1
  
   //Si el destino se encuentra en la misma subred que nuestro host, encontramos su MAC y enviamos
-  printf("Aqui llega\n");
-  char * gateway_str = NULL;
-  ipv4_addr_str(route->gateway_addr,gateway_str);
-  printf("ipv4_send()--route-gateway es : %s\n", gateway_str);
+  
+  
 
-  char * cero_str = "0.0.0.0";
-  ipv4_addr_t ipv4_ceros;
-  ipv4_str_addr(cero_str,ipv4_ceros);
+  char cero_str [IPv4_STR_MAX_LENGTH];
+  ipv4_addr_str(IPv4_ZERO_ADDR,cero_str);
   printf("ipv4_send()--IPv4 de 0's es : %s\n", cero_str);
 
   if(memcmp(route->gateway_addr, IPv4_ZERO_ADDR, IPv4_ADDR_SIZE)==0)
@@ -173,7 +174,7 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
     }
     printf("ipv4_recv()--Paquete recibido\n");
     
-    ipv4_addr_str(pkt_ip_recv.dst_ip, addr_str);
+    ipv4_addr_str(pkt_ip_recv.src_ip, addr_str);
     printf("%s\n", addr_str);
      // if(addr_str == NULL) { continue; }
       
