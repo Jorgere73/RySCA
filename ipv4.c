@@ -162,26 +162,31 @@ int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char* buffer, ipv4
   do {
     long int time_left = timerms_left(&timer);
     eth_len = eth_recv(layer->iface, macPropia ,TYPE_IP, (unsigned char*) &pkt_ip_recv,sizeof(pkt_ip_recv), time_left);
-    printf("ipv4_recv()--ESTO ES ETH_LEN %d\n",eth_len);
-    if (eth_len == 0)
+    //printf("ipv4_recv()--ESTO ES ETH_LEN %d\n",eth_len);
+    /*if (eth_len == 0)
     {
       printf("ipv4_recv()--No se ha recibido nada\n");
       return 0;
     }
+    */
     if(eth_len == -1){
       printf("ipv4_recv()--ERROR AL RECIBIR EN LA FUNCION IPv4_recv()");
       return -1;
     }
-    printf("ipv4_recv()--Paquete recibido\n");
+    //printf("ipv4_recv()--Paquete recibido\n");
     
     ipv4_addr_str(pkt_ip_recv.src_ip, addr_str);
     printf("%s\n", addr_str);
      // if(addr_str == NULL) { continue; }
       
       isIP = (memcmp(layer->addr,pkt_ip_recv.dst_ip,IPv4_ADDR_SIZE)==0); //Miramos si la ip que nos pasan por parametro es igual a la que nos llega
-      printf("ipv4_recv()--Protocol: %d\n", pkt_ip_recv.protocol);
+      //printf("ipv4_recv()--Protocol: %d\n", pkt_ip_recv.protocol);
       isProtocol = (pkt_ip_recv.protocol == protocol);
     //Hacemos las comprobaciones necesarias(Que esta bien) para salir del do while
+    if(time_left <= 0)
+    {
+      return 0;
+    }
     
   } while (!(isIP && isProtocol));
    int payload_len;

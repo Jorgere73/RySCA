@@ -82,7 +82,7 @@ int main(int argc, char* argv[]){
     //int ipv4_recv(ipv4_layer_t * layer, uint8_t protocol,unsigned char buffer [], ipv4_addr_t sender, int buf_len,long int timeout);
     unsigned char buffer[IP_MTU];
     ipv4_addr_t sender;
-    int timeout = 2000;
+    int timeout = 10000;
     int len_recv= ipv4_recv(layer,protocol,buffer,sender,(int) DEFAULT_PAYLOAD_LEN,timeout);
     
     printf("ipv4_recv()\n");
