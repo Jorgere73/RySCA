@@ -23,23 +23,25 @@ int main(int argc, char* argv[]){
 
     //inicializamos el layer con el udp_open
     udp_layer_t * udp_layer = udp_open(puerto_in,archivo_config,archivo_route);
-    if(layer ==NULL){
-        fprintf(stderr, "ERROR en udp_open()");
+    if(udp_layer ==NULL){
+        fprintf(stderr, "udp_server--ERROR en udp_open()");
     }
 
     unsigned char buffer[UDP_MTU]; 
     ipv4_addr_t sender;
     long int timeout = 2000;
-    printf("Esperando datagrama UDP...\n");
-    int len= udp_recv(udp_layer,buffer,sender,UDP_MTU,timeout);
-
+    printf("udp_server--Esperando datagrama UDP...\n");
+    uint16_t puerto;
+    while(1){
+    int len= udp_recv(udp_layer,buffer,sender,UDP_MTU,&puerto,timeout);
+    printf("udp_server--%d bytes recibidos desde el puerto %d\n", len,&puerto);
     //Reenviamos el mismo datagrama? NO se muy bien cual es la funcion del servdior
     //De momento vamos a hacer que reenvie el mismo para asegurarnos que funciona
     //Mas adelante le implementaremos una funcionalidad si es que la tiene
 
-    printf("Enviando datagrama desde servidor");
-    udp_send(udp_layer,sender,,buffer, len); //PUERTO???????????
-
+    printf("udp_server--Enviando datagrama desde servidor\n");
+    udp_send(udp_layer,sender,puerto,buffer, len); //PUERTO???????????
+}
     //Cerramos el layer
     ipv4_close(layer);
 } 

@@ -71,8 +71,8 @@ int udp_send(udp_layer_t *udp_layer,ipv4_addr_t ip_dest,uint16_t dst_port,unsign
 return 0;
 } 
 
-/*
-int udp_recv(udp_layer_t* udp_layer,unsigned char buffer [], ipv4_addr_t sender, int buffer_len, long int timeout){//logica de los puertos?
+
+int udp_recv(udp_layer_t* udp_layer,unsigned char buffer [], ipv4_addr_t sender, int buffer_len, uint16_t *port, long int timeout){//logica de los puertos?
 
 
 struct udp_frame pkt_udp_recv;
@@ -92,8 +92,15 @@ struct udp_frame pkt_udp_recv;
 
   }while(!(pkt_udp_recv.dst_port== udp_layer->src_port));
 
+  uint16_t puerto_recibido = ntohs(pkt_udp_recv.dst_port);
+  memcpy(port,&puerto_recibido,sizeof(uint16_t));
+  int payload_len = bytes_recibidos - UDP_HEADER;
+  memcpy(buffer,pkt_ip_recv.payload,buffer_len);
+  return payload_len;
+
+
+
   //Y ahora????
 return 0;
 
 }
-*/
