@@ -72,7 +72,6 @@ int main ( int argc, char * argv[] )
     
     int payload_len = eth_recv(eth_iface, src_addr, eth_type, buffer, 
 			       ETH_MTU, timeout);
-    
     if (payload_len == -1) {
       fprintf(stderr, "%s: ERROR en eth_recv()\n", myself);
       exit(-1);

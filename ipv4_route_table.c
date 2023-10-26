@@ -1,11 +1,9 @@
+#include "ipv4_route_table.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include "header.h"
-#include "ipv4_route_table.h"
-#include "log.h"
-
 
 #define IPV4_SUBNET_MAX_LENGTH 30
 
@@ -81,54 +79,58 @@ int ipv4_route_lookup ( ipv4_route_t * route, ipv4_addr_t addr )
 {
   int prefix_length = 0;
 
+
   // tmp = route->subnet_mask AND addr
   // CMP tmp, route->subnet_addr
   // tmp[0] = route->subnet_mask[0] & addr[0];
   //   IF no_iguales --> return -1
   //   IF iguales --> cuento y devuelvo número 1s route->subnet_mask
-  ipv4_addr_t tmp;
-  for(int i = 0;i<4 ;i++){
-    tmp[i] = route->subnet_mask[i] & addr[i];
-  }
-  if(memcmp(tmp,route->subnet_addr,IPv4_ADDR_SIZE) == 0){
-    for(int i = 0; i<4; i++){
-      switch(route->subnet_mask[i]){
-      case 255: 
-      prefix_length=prefix_length+8;
-      break;
-      case 254:
-      prefix_length=prefix_length+7;
-      break;    
-      case 252:
-      prefix_length=prefix_length+6;
-      break;
-      case 248:
-      prefix_length=prefix_length+5;
-      break;
-      case 240:
-      prefix_length=prefix_length+4;
-      break;    
-      case 224:
-      prefix_length=prefix_length+3;
-      break;    
-      case 192:
-      prefix_length=prefix_length+2;
-      break;
-      case 128:
-      prefix_length=prefix_length+1;
-      break;    
-      case 0:
-      prefix_length=prefix_length+0;
-      break;    
-    }
-  }
-  printf("lookup--Prefijo de la red: %d\n", prefix_length);
+ipv4_addr_t tmp;
+for(int i = 0;i<4 ;i++){
+  tmp[i] = route->subnet_mask[i] & addr[i];
+}
+if(memcmp(tmp,route->subnet_addr,IPv4_ADDR_SIZE) == 0){
+  for(int i = 0; i<4; i++){
+    switch(route->subnet_mask[i]){
+    case 255: 
+    prefix_length=prefix_length+8;
+    break;
+    case 254:
+    prefix_length=prefix_length+7;
+    break;    
+    case 252:
+    prefix_length=prefix_length+6;
+    break;
+    case 248:
+    prefix_length=prefix_length+5;
+    break;
+    case 240:
+    prefix_length=prefix_length+4;
+    break;    
+    case 224:
+    prefix_length=prefix_length+3;
+    break;    
+    case 192:
+    prefix_length=prefix_length+2;
+    break;
+    case 128:
+    prefix_length=prefix_length+1;
+    break;    
+    case 0:
+    prefix_length=prefix_length+0;
+    break;    
 
-  } else
-  {
-    return -1;
   }
-  return prefix_length;
+  }
+printf("Num unos: %d\n", prefix_length);
+
+}else{
+  return -1;
+}
+return prefix_length;
+
+
+
 }
 
 /* void ipv4_route_print ( ipv4_route_t * route );
@@ -300,7 +302,9 @@ int ipv4_route_output ( ipv4_route_t * route, int header, FILE * out )
 
 
 
-
+struct ipv4_route_table {
+  ipv4_route_t * routes[IPv4_ROUTE_TABLE_SIZE];
+};
 
 /* ipv4_route_table_t * ipv4_route_table_create();
  * 
@@ -437,13 +441,12 @@ ipv4_route_t * ipv4_route_table_lookup ( ipv4_route_table_t * table,
                                          ipv4_addr_t addr )
 {
   ipv4_route_t * best_route = NULL;
-  ipv4_route_t * route_i;
-  //ipv4_route_table_print(table);
   int best_route_prefix = -1;
+
   if (table != NULL) {
-    for (int i=0; i<IPv4_ROUTE_TABLE_SIZE; i++) {
-      route_i = table->routes[i];
-      //ipv4_route_t * route_i = ipv4_route_table_get(table, i);
+    int i;
+    for (i=0; i<IPv4_ROUTE_TABLE_SIZE; i++) {
+      ipv4_route_t * route_i = table->routes[i];
       if (route_i != NULL) {
         int route_i_lookup = ipv4_route_lookup(route_i, addr);
         if (route_i_lookup > best_route_prefix) {
@@ -453,6 +456,7 @@ ipv4_route_t * ipv4_route_table_lookup ( ipv4_route_table_t * table,
       }
     }
   }
+  
   return best_route;
 }
 
